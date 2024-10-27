@@ -1,4 +1,6 @@
-w# MSA Project - Swappy
+# MSA Project - Swappy
+
+## Description
 
 ⁤Swappy is a mobile app that simplifies online object trading. ⁤⁤It allows users to offer items they no longer use and receive items they need, promoting sustainability through reuse. ⁤
 
@@ -6,5 +8,7 @@ w# MSA Project - Swappy
 
 ⁤The app is designed to foster a community-driven economy in which users reduce waste by extending the life cycle of products while gaining access to items in a simple, user-friendly way.
 
-⁤FigJam Diagram:  https://www.figma.com/board/57VAbHdqhQSLXICEqYwld8/MSADiagram?node-id=0-1&node-type=canvas&t=bpCTCpAW0sr4qxmH-0  
-Figma Prototype: https://www.figma.com/design/wJ9jmhs0p4ScPQjH1jEnwY/Untitled?node-id=0-1&node-type=canvas&t=1mlYhDmOpMKshw53-0
+## Links
+
+⁤**Diagram, Database Architecture & Endpoints**:  https://www.figma.com/board/57VAbHdqhQSLXICEqYwld8/MSADiagram?node-id=0-1&node-type=canvas&t=bpCTCpAW0sr4qxmH-0  
+**Wirefame**: https://www.figma.com/design/wJ9jmhs0p4ScPQjH1jEnwY/Untitled?node-id=0-1&node-type=canvas&t=1mlYhDmOpMKshw53-0
