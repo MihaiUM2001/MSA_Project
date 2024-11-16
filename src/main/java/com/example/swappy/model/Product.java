@@ -29,7 +29,7 @@ public class Product {
 
     private String publishDate;
     private int numberOfViews;
-    private boolean isVisible;
+    private Boolean isVisible;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     private List<Swap> swaps;
