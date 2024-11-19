@@ -2,6 +2,9 @@ package com.example.swappy.controller;
 
 import com.example.swappy.model.User;
 import com.example.swappy.service.UserService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -10,9 +13,11 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
         this.userService = userService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping
@@ -26,9 +31,22 @@ public class UserController {
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.saveUser(user);
+    public ResponseEntity<?> createUser(@RequestBody User user) {
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            return ResponseEntity.badRequest().body("Password cannot be null or empty");
+        }
+
+        // Hash the password
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+
+        // Save the user
+        User savedUser = userService.saveUser(user);
+
+        // Return response
+        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
+
+
 
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {
