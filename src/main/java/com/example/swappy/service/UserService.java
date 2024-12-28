@@ -1,5 +1,6 @@
 package com.example.swappy.service;
 
+import com.example.swappy.exception.user.NoSuchUserExistsException;
 import com.example.swappy.exception.user.UserAlreadyExistsException;
 import com.example.swappy.model.User;
 import com.example.swappy.repository.UserRepository;
@@ -21,7 +22,12 @@ public class UserService {
     }
 
     public User getUserById(Long id) {
-        return userRepository.findById(id).orElse(null);
+
+        User user = userRepository.findById(id).orElse(null);
+
+        if (user == null) {
+            throw new NoSuchUserExistsException("User with id " + id + " not found!");
+        } else return user;
     }
 
     public User saveUser(User user) {
@@ -33,11 +39,11 @@ public class UserService {
     }
 
     public void deleteUser(Long id) {
-        userRepository.deleteById(id);
-    }
-
-    public User getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        if (userRepository.findById(id).orElse(null) == null) {
+            throw new NoSuchUserExistsException("User with id " + id + " not found!");
+        } else {
+            userRepository.deleteById(id);
+        }
     }
 }
 

@@ -29,15 +29,12 @@ public class AuthController {
 
     @PostMapping
     public String login(@RequestBody LoginRequest loginRequest) {
-        System.out.println(loginRequest.getEmail());
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getEmail(),
                         loginRequest.getPassword()
                 )
         );
-
-        System.out.println("TEST");
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
 
