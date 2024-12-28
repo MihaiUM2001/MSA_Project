@@ -1,8 +1,12 @@
 package com.example.swappy.controller;
 
+import com.example.swappy.exception.ErrorResponse;
+import com.example.swappy.exception.user.UserAlreadyExistsException;
 import com.example.swappy.model.User;
 import com.example.swappy.service.UserService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +34,7 @@ public class UserController {
         return userService.getUserById(id);
     }
 
-    @PostMapping
+        @PostMapping
     public ResponseEntity<?> createUser(@RequestBody User user) {
         if (user.getPassword() == null || user.getPassword().isEmpty()) {
             return ResponseEntity.badRequest().body("Password cannot be null or empty");
@@ -46,7 +50,11 @@ public class UserController {
         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
     }
 
-
+    @ExceptionHandler(value = UserAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleUserAlreadyExistsException(UserAlreadyExistsException e) {
+        return new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
+    }
 
     @DeleteMapping("/{id}")
     public void deleteUser(@PathVariable Long id) {
