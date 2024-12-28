@@ -1,10 +1,13 @@
 package com.example.swappy.controller;
 
 import com.example.swappy.dto.LoginRequest;
+import com.example.swappy.model.User;
+import com.example.swappy.security.CustomUserDetailsService;
 import com.example.swappy.security.JwtUtil;
+import com.example.swappy.service.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -14,21 +17,31 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtUtil jwtUtil;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil) {
+    private final CustomUserDetailsService userDetailsService;
+    private final UserService userService;
+
+    public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil, CustomUserDetailsService userDetailsService, UserService userService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.userDetailsService = userDetailsService;
+        this.userService = userService;
     }
 
-    @PostMapping("/login")
+    @PostMapping
     public String login(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
+        System.out.println(loginRequest.getEmail());
+        authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        String.valueOf(loginRequest.getId()), // Authenticate by ID
+                        loginRequest.getEmail(),
                         loginRequest.getPassword()
                 )
         );
 
-        // Generate JWT token using the user ID
-        return jwtUtil.generateToken(String.valueOf(loginRequest.getId()));
+        System.out.println("TEST");
+
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
+
+        // Generate JWT token using the custom userDetails class
+        return jwtUtil.generateToken(userDetails);
     }
 }
