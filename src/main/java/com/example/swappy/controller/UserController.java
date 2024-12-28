@@ -1,6 +1,7 @@
 package com.example.swappy.controller;
 
 import com.example.swappy.exception.ErrorResponse;
+import com.example.swappy.exception.user.NoSuchUserExistsException;
 import com.example.swappy.exception.user.UserAlreadyExistsException;
 import com.example.swappy.model.User;
 import com.example.swappy.service.UserService;
@@ -54,6 +55,12 @@ public class UserController {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleUserAlreadyExistsException(UserAlreadyExistsException e) {
         return new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
+    }
+
+    @ExceptionHandler(value = NoSuchUserExistsException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleUserNotFoundException(NoSuchUserExistsException e) {
+        return new ErrorResponse(HttpStatus.NOT_FOUND.value(), e.getMessage());
     }
 
     @DeleteMapping("/{id}")
