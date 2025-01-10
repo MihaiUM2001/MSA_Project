@@ -81,8 +81,9 @@ class RegisterScreen extends StatelessWidget {
                         );
                         Navigator.pushReplacementNamed(context, '/login');
                       } catch (error) {
+                        // Display the error message cleanly
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Error: $error")),
+                          SnackBar(content: Text(error.toString())),
                         );
                       }
                     }
