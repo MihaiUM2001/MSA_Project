@@ -1,9 +1,10 @@
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
   final String baseUrl = "http://10.0.2.2:8000/api";
+  final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 
   Future<void> createUser(String fullName, String phoneNumber, String email, String password) async {
     // Existing createUser logic
@@ -28,8 +29,7 @@ class UserService {
         final token = responseData['token'];
 
         if (token != null) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('token', token);
+          await secureStorage.write(key: 'token', value: token);
           print("Token saved: $token");
         } else {
           throw Exception("Invalid response: No token received");
