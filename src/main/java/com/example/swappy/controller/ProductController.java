@@ -6,6 +6,9 @@ import com.example.swappy.exception.ErrorResponse;
 import com.example.swappy.exception.product.SellerDoesntOwnProductException;
 import com.example.swappy.model.Product;
 import com.example.swappy.service.ProductService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -24,8 +27,10 @@ public class ProductController {
 
     // !!!
     @GetMapping
-    public List<Product> getAllProducts() {
-        return productService.getAllProducts();
+    public Page<Product> getAllProducts( @RequestParam(defaultValue = "0") int page,
+                                         @RequestParam(defaultValue = "10") int size ) {
+        Pageable pageable = PageRequest.of(page, size);
+        return productService.getAllProducts(pageable);
     }
 
     @GetMapping("/{id}")
