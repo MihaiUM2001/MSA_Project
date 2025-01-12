@@ -21,14 +21,17 @@ public class Product {
     private String productTitle;
     private String productDescription;
     private String productImage;
+
     private String swapPreference;
+
+    private Double estimatedRetailPrice;
 
     @ManyToOne
     @JoinColumn(name = "seller_id", nullable = false)
     private User seller;
 
     private String publishDate;
-    private int numberOfViews;
+    private Integer numberOfViews;
     private Boolean isVisible;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
