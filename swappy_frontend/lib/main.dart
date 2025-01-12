@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:swappy_frontend/screens/splash_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/login_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/main_navigation.dart';
 
 void main() {
   runApp(MyApp());
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => SplashScreen(),
         '/register': (context) => RegisterScreen(),
         '/login': (context) => LoginScreen(),
-        '/home': (context) => HomeScreen(),
+        '/home': (context) => MainNavigation(), // Updated to use MainNavigation
       },
     );
   }
