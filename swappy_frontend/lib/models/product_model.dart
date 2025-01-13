@@ -11,7 +11,7 @@ class Product {
   final String? publishDate;
   final int? numberOfViews;
   final bool? isVisible;
-  final List<dynamic>? swaps;
+  final List<dynamic>? swaps; // Ensure swaps is properly parsed as a List<dynamic>
 
   Product({
     this.id,
@@ -34,12 +34,12 @@ class Product {
       productDescription: json['productDescription'],
       productImage: json['productImage'],
       swapPreference: json['swapPreference'],
-      estimatedRetailPrice: json['estimatedRetailPrice'],
+      estimatedRetailPrice: (json['estimatedRetailPrice'] as num?)?.toDouble(),
       seller: json['seller'] != null ? Seller.fromJson(json['seller']) : null,
       publishDate: json['publishDate'],
       numberOfViews: json['numberOfViews'],
       isVisible: json['isVisible'],
-      swaps: json['swaps'],
+      swaps: json['swaps'] ?? [], // Ensure swaps is parsed as a list, defaulting to an empty list
     );
   }
 }

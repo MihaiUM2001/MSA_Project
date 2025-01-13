@@ -15,15 +15,22 @@ public class FirebaseConfig {
     @PostConstruct
     public void initializeFirebase() {
         try {
-            FileInputStream serviceAccount = new FileInputStream("src/main/resources/serviceAccountKey.json");
+            // Check if a FirebaseApp instance already exists
+            if (FirebaseApp.getApps().isEmpty()) {
+                FileInputStream serviceAccount = new FileInputStream("src/main/resources/serviceAccountKey.json");
 
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setStorageBucket("swappy-b548b.firebasestorage.app")
-                    .build();
+                FirebaseOptions options = FirebaseOptions.builder()
+                        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                        .setStorageBucket("swappy-b548b.appspot.com") // Ensure the bucket URL is correct
+                        .build();
 
-            FirebaseApp.initializeApp(options);
+                FirebaseApp.initializeApp(options);
+                System.out.println("Firebase has been initialized successfully.");
+            } else {
+                System.out.println("FirebaseApp is already initialized.");
+            }
         } catch (IOException e) {
+            System.err.println("Error initializing Firebase: " + e.getMessage());
             e.printStackTrace();
         }
     }
