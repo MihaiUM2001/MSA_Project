@@ -1,0 +1,1 @@
+ /Users/chary/Documents/MSA/swappy_frontend/.dart_tool/flutter_build/94fb4d919a0948ba43f8262f461ab13b/native_assets.yaml: 
