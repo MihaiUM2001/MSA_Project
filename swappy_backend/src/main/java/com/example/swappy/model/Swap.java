@@ -1,5 +1,6 @@
 package com.example.swappy.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ public class Swap {
     private Long id;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
@@ -33,8 +35,12 @@ public class Swap {
     private String swapProductTitle;
     private String swapProductDescription;
     private String swapProductImage;
-    private String swapStatus;
+
+    private double estimatedRetailPrice;
+
+    @Enumerated(EnumType.STRING)
+    private SwapStatus swapStatus;
+
     private LocalDate creationDate;
 
-    // Getters and setters
 }
