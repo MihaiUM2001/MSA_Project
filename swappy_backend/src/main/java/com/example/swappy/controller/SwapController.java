@@ -1,8 +1,17 @@
 package com.example.swappy.controller;
 
+import com.example.swappy.dto.SwapRequest;
+import com.example.swappy.dto.SwapUpdateRequest;
+import com.example.swappy.exception.ErrorResponse;
+import com.example.swappy.exception.swap.CannotSwapOwnProductException;
+import com.example.swappy.exception.swap.SwapStatusAlreadyNotPendingException;
+import com.example.swappy.exception.swap.UnauthorizedSwapStatusChangeException;
 import com.example.swappy.model.Swap;
 import com.example.swappy.service.SwapService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -27,22 +36,36 @@ public class SwapController {
     }
 
     @PostMapping
-    public Swap createSwap(@RequestBody Swap swap) {
-        return swapService.saveSwap(swap);
+    public Swap createSwap(@RequestBody SwapRequest swap, @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        return swapService.saveSwap(swap, token);
     }
 
-    @PutMapping("/{id}")
-    public Swap updateSwap(@PathVariable Long id, @RequestBody Swap updatedSwap) {
-        Swap existingSwap = swapService.getSwapById(id);
-        if (existingSwap != null) {
-            existingSwap.setSwapStatus(updatedSwap.getSwapStatus());
-            return swapService.saveSwap(existingSwap);
-        }
-        return null;
+    @PatchMapping("/{id}")
+    public Swap updateSwap(@PathVariable Long id, @RequestBody SwapUpdateRequest swapUpdateRequest, @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        return swapService.updateSwap(swapUpdateRequest, id, token);
     }
+
 
     @DeleteMapping("/{id}")
     public void deleteSwap(@PathVariable Long id) {
         swapService.deleteSwap(id);
+    }
+
+    @ExceptionHandler(value = CannotSwapOwnProductException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleCannotSwapOwnProductException(CannotSwapOwnProductException e) {
+        return new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
+    }
+
+    @ExceptionHandler(value = UnauthorizedSwapStatusChangeException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleUnauthorizedSwapStatusChangeException(UnauthorizedSwapStatusChangeException e) {
+        return new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
+    }
+
+    @ExceptionHandler(value = SwapStatusAlreadyNotPendingException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleSwapStatusAlreadyNotPendingException(SwapStatusAlreadyNotPendingException e) {
+        return new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), e.getMessage());
     }
 }
