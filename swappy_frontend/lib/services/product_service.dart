@@ -6,6 +6,7 @@ import '../models/product_model.dart';
 class ProductService {
   final FlutterSecureStorage secureStorage = FlutterSecureStorage();
   final String baseUrl = "http://10.0.2.2:8000/api";
+  // final String baseUrl = "http://192.168.0.248:8000/api";
 
   Future<String?> getToken() async {
     return await secureStorage.read(key: 'token');
