@@ -35,32 +35,35 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       isLoading = true;
-      print("Loading more products...");
+      print("Loading products for page: $currentPage...");
     });
 
     try {
-      final response = await _productService.fetchProducts(page: currentPage, pageSize: pageSize);
-
-      print("API Response: $response");
-
-      final List<Product> newProducts = response['products'];
-      final int totalPages = response['totalPages'];
+      final List<Product> newProducts = await _productService.fetchProducts(page: currentPage, pageSize: pageSize);
 
       setState(() {
         allProducts.addAll(newProducts);
         currentPage++;
-        hasMore = currentPage < totalPages;
-        print("Loaded ${newProducts.length} products, total: ${allProducts.length}");
+
+        // Stop loading more if no products are returned
+        if (newProducts.length < pageSize) {
+          hasMore = false;
+        }
+
+        print("Loaded ${newProducts.length} products, total loaded: ${allProducts.length}");
       });
     } catch (e) {
-      print('Error: $e');
+      print('Error loading products: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to load products')),
+      );
     } finally {
       setState(() {
         isLoading = false;
-        print("Finished loading");
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
