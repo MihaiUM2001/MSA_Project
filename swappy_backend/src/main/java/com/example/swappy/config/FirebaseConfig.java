@@ -15,13 +15,12 @@ public class FirebaseConfig {
     @PostConstruct
     public void initializeFirebase() {
         try {
-            // Check if a FirebaseApp instance already exists
             if (FirebaseApp.getApps().isEmpty()) {
                 FileInputStream serviceAccount = new FileInputStream("src/main/resources/serviceAccountKey.json");
 
                 FirebaseOptions options = FirebaseOptions.builder()
                         .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                        .setStorageBucket("swappy-b548b.appspot.com") // Ensure the bucket URL is correct
+                        .setStorageBucket("swappy-b548b.firebasestorage.app")
                         .build();
 
                 FirebaseApp.initializeApp(options);

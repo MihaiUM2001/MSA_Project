@@ -35,6 +35,11 @@ public class SwapController {
         return swapService.getSwapById(id);
     }
 
+    @GetMapping("/product/{id}")
+    public List<Swap> getSwapsByProductId(@PathVariable Long id, @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        return swapService.getSwapsByProductId(id, token);
+    }
+
     @PostMapping
     public Swap createSwap(@RequestBody SwapRequest swap, @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         return swapService.saveSwap(swap, token);
