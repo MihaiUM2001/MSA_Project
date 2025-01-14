@@ -18,6 +18,10 @@ public class FirebaseStorageService {
 
         Blob blob = bucket.create(fileName, file.getBytes(), file.getContentType());
 
-        return String.format("https://storage.googleapis.com/%s/%s", bucket.getName(), fileName);
+        return String.format(
+                "https://firebasestorage.googleapis.com/v0/b/%s/o/%s?alt=media",
+                bucket.getName(),
+                fileName.replace("/", "%2F") // URL-encode the file name
+        );
     }
 }
