@@ -3,8 +3,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
 class UserService {
-  final String baseUrl = "http://10.0.2.2:8000/api";
-  // final String baseUrl = "http://192.168.0.248:8000/api";
+  // final String baseUrl = "http://10.0.2.2:8000/api";
+  final String baseUrl = "http://192.168.0.248:8000/api";
   final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 
   Future<void> createUser(
