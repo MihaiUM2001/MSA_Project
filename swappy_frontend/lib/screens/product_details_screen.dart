@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import '../components/swap_form_page.dart';
 import '../models/product_model.dart';
+import '../models/swap_model.dart';
 import '../services/product_service.dart';
+import '../services/swap_service.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final int productId;
@@ -13,14 +16,20 @@ class ProductDetailsScreen extends StatefulWidget {
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   final ProductService _productService = ProductService();
+  final SwapService _swapService = SwapService();
+
   Product? product;
+  List<Swap> swaps = [];
   bool isLoading = true;
   bool hasError = false;
+
+  int? currentUserId = 20; // Replace with actual logic to fetch current user ID
 
   @override
   void initState() {
     super.initState();
     _fetchProductDetails();
+    _fetchSwaps();
   }
 
   Future<void> _fetchProductDetails() async {
@@ -39,6 +48,17 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     }
   }
 
+  Future<void> _fetchSwaps() async {
+    try {
+      final fetchedSwaps = await _swapService.fetchSwapsForProduct(widget.productId);
+      setState(() {
+        swaps = fetchedSwaps;
+      });
+    } catch (e) {
+      print('Error fetching swaps: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -54,6 +74,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         body: const Center(child: Text('Failed to load product details')),
       );
     }
+
+    bool isSeller = product!.seller?.id == currentUserId;
 
     return Scaffold(
       appBar: AppBar(
@@ -96,46 +118,61 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            // Product Description
-            Text(
-              product!.productDescription ?? 'No description available',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            // Seller Info
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundImage: product!.seller?.profilePictureUrl != null
-                      ? NetworkImage(product!.seller!.profilePictureUrl!)
-                      : null,
-                  child: product!.seller?.profilePictureUrl == null
-                      ? const Icon(Icons.person, size: 20, color: Colors.grey)
-                      : null,
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  product!.seller?.fullName ?? 'Unknown Seller',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-            const Spacer(),
-            // Swap Button
-            ElevatedButton(
-              onPressed: () {
-                // Initialize the swap functionality here
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Swap initialized')),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size.fromHeight(50),
-                backgroundColor: Colors.blue,
+            // Conditionally Render Swap List Section
+            if (swaps.isNotEmpty) ...[
+              const Text(
+                'Your Swap Offers for this Product',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
-              child: const Text('Start Swap'),
-            ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: swaps.length,
+                  itemBuilder: (context, index) {
+                    final swap = swaps[index];
+                    return Card(
+                      child: ListTile(
+                        leading: swap.imageUrl != null
+                            ? Image.network(
+                          swap.imageUrl!,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                        )
+                            : const Icon(Icons.image, size: 50),
+                        title: Text(swap.title ?? 'Untitled Swap'),
+                        subtitle: Text(swap.description ?? 'No description provided'),
+                        trailing: Text(
+                          '\$${swap.estimatedRetailPrice?.toStringAsFixed(2) ?? '0.00'}',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            // Create Swap Offer Button
+            if (!isSeller)
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SwapFormPage(
+                        productId: widget.productId,
+                        sellerId: product!.seller!.id!,
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  backgroundColor: Colors.blue,
+                ),
+                child: const Text('Create Swap Offer'),
+              ),
           ],
         ),
       ),
