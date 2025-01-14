@@ -41,6 +41,20 @@ public class SwapService {
         return swapRepository.findById(id).orElse(null);
     }
 
+    public List<Swap> getSwapsByProductId(Long id, String token) {
+        String email = getEmail(token);
+
+        User user = userRepository.findByEmail(email);
+
+        Product product = productRepository.findOneById(id);
+
+        if(product.getSeller() == user) {
+           return swapRepository.findAllByProductId(id);
+        } else {
+           return swapRepository.findAllByProductIdAndAndBuyerId(id, user.getId());
+        }
+    }
+
     public Swap saveSwap(SwapRequest swapRequest, String token) {
 
         String email = getEmail(token);
