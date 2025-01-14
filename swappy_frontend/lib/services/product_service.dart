@@ -9,44 +9,43 @@ class ProductService {
   final String baseUrl = "http://192.168.0.248:8000/api";
 
   Future<String?> getToken() async {
-    // Retrieve the saved token
     return await secureStorage.read(key: 'token');
   }
 
-  Future<Map<String, dynamic>> fetchProducts({required int page, required int pageSize}) async {
+  Future<List<Product>> fetchProducts({required int page, required int pageSize}) async {
     final token = await getToken();
 
     if (token == null) {
       throw Exception('No token found');
     }
 
-    final response = await http.get(
-      Uri.parse('$baseUrl/products?page=$page&size=$pageSize'),
-      headers: {
-        'Authorization': 'Bearer $token', // Include the Bearer token
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/products?page=$page&size=$pageSize'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
 
-      // Extract the content (products) and pagination metadata
-      final List<dynamic> content = data['content'];
-      final int totalPages = data['totalPages'];
-      final int totalElements = data['totalElements'];
-
-      return {
-        'products': content.map((json) => Product.fromJson(json)).toList(),
-        'totalPages': totalPages,
-        'totalElements': totalElements,
-      };
-    } else if (response.statusCode == 401) {
-      throw Exception('Unauthorized: Invalid token');
-    } else {
-      throw Exception('Failed to load products');
+        // Map each item in the list to a Product object
+        return data.map((json) => Product.fromJson(json)).toList();
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized: Invalid token');
+      } else {
+        throw Exception('Failed to load products: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching products: $e');
+      rethrow;
     }
   }
+
+
+
 
   Future<Product> fetchProductDetails(int productId) async {
     final token = await getToken();
@@ -55,21 +54,26 @@ class ProductService {
       throw Exception('No token found');
     }
 
-    final response = await http.get(
-      Uri.parse('$baseUrl/products/$productId'),
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
-    );
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/products/$productId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return Product.fromJson(data);
-    } else if (response.statusCode == 404) {
-      throw Exception('Product not found');
-    } else {
-      throw Exception('Failed to fetch product details');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return Product.fromJson(data);
+      } else if (response.statusCode == 404) {
+        throw Exception('Product not found');
+      } else {
+        throw Exception('Failed to fetch product details: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error fetching product details: $e');
+      rethrow; // Propagate the error to the caller
     }
   }
 }
