@@ -11,7 +11,7 @@ class UserService {
       String fullName, String phoneNumber, String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/users'), // POST /api/users
+        Uri.parse('$baseUrl/users'),
         headers: {
           "Content-Type": "application/json",
         },
@@ -27,11 +27,9 @@ class UserService {
       print("Response Body: ${response.body}");
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        // Successful user creation.
-        // Decide what to do next: maybe log the user in or store user data.
+        // Successful user creation
         print("User created successfully.");
       } else {
-        // If the API returns a specific error message in JSON
         final Map<String, dynamic> errorResponse = jsonDecode(response.body);
         final errorMessage =
             errorResponse['message'] ?? 'Unknown error occurred';
@@ -46,7 +44,7 @@ class UserService {
   Future<void> loginUser(String email, String password) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/auth'), // Assuming the login endpoint is /api/auth
+        Uri.parse('$baseUrl/auth'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "email": email,

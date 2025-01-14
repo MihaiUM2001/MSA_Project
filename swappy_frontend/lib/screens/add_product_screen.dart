@@ -13,8 +13,7 @@ class AddProductScreen extends StatefulWidget {
 }
 
 class _AddProductScreenState extends State<AddProductScreen> {
-  // SecureStorage to store/retrieve the JWT in the same file
-  static const _jwtKey = 'jwt';
+  static const _jwtKey = 'token';
   final _secureStorage = const FlutterSecureStorage();
 
   final _formKey = GlobalKey<FormState>();
@@ -34,18 +33,12 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _loadJwtToken();
   }
 
-  // Retrieve JWT token from secure storage
   Future<void> _loadJwtToken() async {
     final token = await _secureStorage.read(key: _jwtKey);
     setState(() {
-      _jwtToken = token; // might be null if not stored yet
+      _jwtToken = token;
     });
   }
-
-  // (Optional) If you want to save a token at any point:
-  // Future<void> _saveJwtToken(String token) async {
-  //   await _secureStorage.write(key: _jwtKey, value: token);
-  // }
 
   @override
   void dispose() {
@@ -56,7 +49,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
     super.dispose();
   }
 
-  // 1) Pick image from gallery
   Future<void> _pickImage() async {
     try {
       final picker = ImagePicker();
@@ -69,14 +61,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
   }
 
-  // 2) Upload image (requires JWT if your server needs it)
   Future<String> _uploadImage(File imageFile) async {
-    // Adjust to your IP/port
     // final uri = Uri.parse('http://10.0.2.2:8000/api/image/upload');
     final uri = Uri.parse('http://192.168.0.248:8000/api/image/upload');
     final request = http.MultipartRequest('POST', uri);
 
-    // If your server requires Bearer auth
     if (_jwtToken != null) {
       request.headers['Authorization'] = 'Bearer $_jwtToken';
     }
@@ -97,7 +86,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
   }
 
-  // 3) Create product
   Future<void> _createProduct({
     required String productTitle,
     required String productDescription,
@@ -129,7 +117,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
     }
   }
 
-  // 4) Submit flow: pick image -> upload -> create product
   Future<void> _submitForm() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedImage == null) {
@@ -177,13 +164,15 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // If you *require* a token to do anything, you might show a loading indicator if _jwtToken is null.
-    // If your endpoint is permitAll(), you can proceed without a token.
-    // For now, let's just let it proceed.
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add A Product'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/home');
+          },
+        ),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -206,7 +195,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Title
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(labelText: 'Product Title *'),
@@ -219,7 +207,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Description
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(labelText: 'Product Description *'),
@@ -233,7 +220,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Swap Preference
               TextFormField(
                 controller: _swapPreferenceController,
                 decoration: const InputDecoration(
@@ -249,7 +235,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Estimated Retail Price
               TextFormField(
                 controller: _estimatedRetailPriceController,
                 keyboardType: TextInputType.number,
@@ -274,7 +259,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () {
+                      Navigator.pushReplacementNamed(context, '/home');
+                    },
                     child: const Text('Cancel'),
                   ),
                   ElevatedButton(
