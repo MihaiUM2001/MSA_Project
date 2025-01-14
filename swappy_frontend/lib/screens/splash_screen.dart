@@ -1,17 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:swappy_frontend/services/user_service.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  final UserService _userService = UserService();
+  bool _isLoading = true; // To manage the loading state
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAuthentication();
+  }
+
+  Future<void> _checkAuthentication() async {
+    try {
+      final isLoggedIn = await _userService.isLoggedIn();
+      if (isLoggedIn) {
+        // Navigate to Home if logged in
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
+        // Navigate to Login if not logged in
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    } catch (e) {
+      // Handle errors gracefully
+      print('Error checking authentication: $e');
+      Navigator.pushReplacementNamed(context, '/login');
+    } finally {
+      setState(() {
+        _isLoading = false; // Ensure loading ends
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
+      body: _isLoading
+          ? Center(
+        child: CircularProgressIndicator(), // Show loading spinner
+      )
+          : Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
               Color(0xFF8E9EFC), // Gradient start color
-              Colors.white,      // Gradient end color
+              Colors.white, // Gradient end color
             ],
           ),
         ),
