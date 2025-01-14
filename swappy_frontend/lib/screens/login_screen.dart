@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/user_service.dart';
+import 'main_navigation.dart';
 
 class LoginScreen extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
@@ -50,7 +51,11 @@ class LoginScreen extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text("Login successful")),
                         );
-                        Navigator.pushReplacementNamed(context, '/home'); // Navigate to home screen
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => MainNavigation()),
+                              (Route<dynamic> route) => false, // Remove all previous routes
+                        ); // Navigate to home screen
                       } catch (error) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(error.toString())),

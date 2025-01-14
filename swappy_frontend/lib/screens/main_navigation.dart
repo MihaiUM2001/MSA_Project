@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'search_screen.dart';
 import 'add_product_screen.dart';
-import 'notifications_screen.dart';
+import 'offers_screen.dart'; // Replace with your OffersScreen
 import 'profile_screen.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -17,7 +17,7 @@ class _MainNavigationState extends State<MainNavigation> {
     HomeScreen(), // Home page
     SearchScreen(), // Search page
     AddProductScreen(), // Add product page
-    NotificationsScreen(), // Notifications page
+    OffersScreen(), // Offers page
     ProfileScreen(), // Profile page
   ];
 
@@ -51,8 +51,8 @@ class _MainNavigationState extends State<MainNavigation> {
             label: 'Add',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.notifications),
-            label: 'Notifications',
+            icon: Icon(Icons.local_offer), // Offers icon
+            label: 'Offers',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
