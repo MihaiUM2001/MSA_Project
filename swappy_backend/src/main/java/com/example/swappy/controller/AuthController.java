@@ -4,12 +4,16 @@ import com.example.swappy.dto.LoginRequest;
 import com.example.swappy.dto.LoginResponse;
 import com.example.swappy.security.CustomUserDetailsService;
 import com.example.swappy.security.JwtUtil;
+import io.jsonwebtoken.Claims;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Date;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -25,6 +29,52 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
         this.userDetailsService = userDetailsService;
     }
+
+    @PostMapping("/validate")
+    public ResponseEntity<?> validateToken(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return ResponseEntity.status(401).body(Map.of(
+                    "status", "invalid",
+                    "message", "Authorization header is missing or improperly formatted"
+            ));
+        }
+
+        String token = authHeader.substring(7); // Remove "Bearer " prefix
+
+        try {
+            // Extract claims from the token
+            Claims claims = jwtUtil.extractAllClaims(token);
+
+            // Check expiration directly from claims
+            Date expiration = claims.getExpiration();
+            if (expiration.before(new Date())) {
+                return ResponseEntity.status(401).body(Map.of(
+                        "status", "invalid",
+                        "message", "Token is expired"
+                ));
+            }
+
+            // Extract username and other details
+            String username = claims.getSubject();
+            Date issuedAt = claims.getIssuedAt();
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "valid",
+                    "user", Map.of(
+                            "username", username,
+                            "issuedAt", issuedAt,
+                            "expiration", expiration
+                    )
+            ));
+        } catch (Exception e) {
+            // Handle unexpected errors during token processing
+            return ResponseEntity.status(401).body(Map.of(
+                    "status", "invalid",
+                    "message", "Error validating token: " + e.getMessage()
+            ));
+        }
+    }
+
 
     @PostMapping
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {

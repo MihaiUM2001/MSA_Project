@@ -43,7 +43,7 @@ public class SecurityConfig {
                     return config;
                 }))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/**", "/api/users", "/api/auth", "/ping").permitAll()
+                        .requestMatchers("/api/users/**", "/api/users", "/api/auth", "/ping", "/api/auth/validate").permitAll()
                         .anyRequest().authenticated() // Protect other endpoints
                 )
                 // Do not create JSESSIONID since we authorize requests on jwt
