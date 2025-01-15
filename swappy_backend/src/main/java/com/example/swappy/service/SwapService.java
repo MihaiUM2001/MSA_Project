@@ -5,13 +5,14 @@ import com.example.swappy.dto.SwapUpdateRequest;
 import com.example.swappy.exception.swap.SwapStatusAlreadyNotPendingException;
 import com.example.swappy.exception.swap.UnauthorizedSwapStatusChangeException;
 import com.example.swappy.exception.swap.CannotSwapOwnProductException;
+import com.example.swappy.jpa.repository.ProductJpaRepository;
 import com.example.swappy.model.Product;
 import com.example.swappy.model.Swap;
 import com.example.swappy.model.SwapStatus;
 import com.example.swappy.model.User;
-import com.example.swappy.repository.ProductRepository;
-import com.example.swappy.repository.SwapRepository;
-import com.example.swappy.repository.UserRepository;
+import com.example.swappy.elasticsearch.repository.ProductElasticRepository;
+import com.example.swappy.jpa.repository.SwapRepository;
+import com.example.swappy.jpa.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import com.example.swappy.security.JwtUtil;
 
@@ -23,13 +24,13 @@ public class SwapService {
 
     private final SwapRepository swapRepository;
     private final UserRepository userRepository;
-    private final ProductRepository productRepository;
+    private final ProductJpaRepository productJpaRepository;
 
-    public SwapService(JwtUtil jwtUtil, SwapRepository swapRepository, UserRepository userRepository, ProductRepository productRepository) {
+    public SwapService(JwtUtil jwtUtil, SwapRepository swapRepository, UserRepository userRepository, ProductJpaRepository productJpaRepository) {
         this.jwtUtil = jwtUtil;
         this.swapRepository = swapRepository;
         this.userRepository = userRepository;
-        this.productRepository = productRepository;
+        this.productJpaRepository = productJpaRepository;
     }
 
     // !!!
@@ -46,7 +47,7 @@ public class SwapService {
 
         User user = userRepository.findByEmail(email);
 
-        Product product = productRepository.findOneById(id);
+        Product product = productJpaRepository.findOneById(id);
 
         if(product.getSeller() == user) {
            return swapRepository.findAllByProductId(id);
@@ -63,7 +64,7 @@ public class SwapService {
 
         Swap swap = new Swap();
         User seller = userRepository.findOneById(swapRequest.getSellerId());
-        Product product = productRepository.findOneById(swapRequest.getProductId());
+        Product product = productJpaRepository.findOneById(swapRequest.getProductId());
 
         if (buyer != seller) {
             swap.setBuyer(buyer);

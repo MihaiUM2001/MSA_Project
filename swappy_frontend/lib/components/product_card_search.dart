@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import '../models/product_model.dart';
 import '../screens/product_details_screen.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCardSearch extends StatelessWidget {
   final Product product;
 
-  const ProductCard({Key? key, required this.product}) : super(key: key);
+  const ProductCardSearch({Key? key, required this.product}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -43,11 +43,11 @@ class ProductCard extends StatelessWidget {
                   // Seller's Profile Picture
                   CircleAvatar(
                     radius: 16,
-                    backgroundImage: product.seller?.profilePictureUrl != null
-                        ? NetworkImage(product.seller!.profilePictureUrl!)
+                    backgroundImage: product.sellerProfilePic != null
+                        ? NetworkImage(product.sellerProfilePic!)
                         : null,
                     backgroundColor: Colors.grey[300],
-                    child: product.seller?.profilePictureUrl == null
+                    child: product.sellerProfilePic == null
                         ? const Icon(Icons.person, color: Colors.white)
                         : null,
                   ),
@@ -55,7 +55,7 @@ class ProductCard extends StatelessWidget {
                   // Seller's Name
                   Expanded(
                     child: Text(
-                      product.seller?.fullName ?? "Unknown Seller",
+                      product.sellerName ?? "Unknown Seller",
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                       overflow: TextOverflow.ellipsis,
                     ),
