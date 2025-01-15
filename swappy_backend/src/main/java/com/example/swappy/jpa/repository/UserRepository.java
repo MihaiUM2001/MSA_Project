@@ -1,4 +1,4 @@
-package com.example.swappy.repository;
+package com.example.swappy.jpa.repository;
 
 import com.example.swappy.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;

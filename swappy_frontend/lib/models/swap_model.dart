@@ -4,7 +4,7 @@ class Swap {
   final String? description;
   final String? imageUrl;
   final double? estimatedRetailPrice;
-  final String? status;
+  String? status;
   final String? creationDate;
 
   Swap({

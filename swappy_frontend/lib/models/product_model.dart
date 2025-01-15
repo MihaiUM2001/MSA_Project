@@ -11,7 +11,9 @@ class Product {
   final String? publishDate;
   final int? numberOfViews;
   final bool? isVisible;
-  final List<dynamic>? swaps; // Ensure swaps is properly parsed as a List<dynamic>
+  final List<dynamic>? swaps;
+  final String? sellerName;
+  final String? sellerProfilePic;
 
   Product({
     this.id,
@@ -25,6 +27,8 @@ class Product {
     this.numberOfViews,
     this.isVisible,
     this.swaps,
+    this.sellerName,
+    this.sellerProfilePic,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -39,7 +43,9 @@ class Product {
       publishDate: json['publishDate'],
       numberOfViews: json['numberOfViews'],
       isVisible: json['isVisible'],
-      swaps: json['swaps'] ?? [], // Ensure swaps is parsed as a list, defaulting to an empty list
+      swaps: json['swaps'] ?? [],
+      sellerName: json['sellerName'] ?? null,
+      sellerProfilePic: json['sellerProfilePic'] ?? null,// Ensure swaps is parsed as a list, defaulting to an empty list
     );
   }
 }

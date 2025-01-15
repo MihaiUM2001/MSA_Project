@@ -5,10 +5,7 @@ import com.example.swappy.exception.user.NoSuchUserExistsException;
 import com.example.swappy.exception.user.UserAlreadyExistsException;
 import com.example.swappy.model.User;
 import com.example.swappy.service.UserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ProblemDetail;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -28,6 +25,11 @@ public class UserController {
     @GetMapping
     public List<User> getAllUsers() {
         return userService.getAllUsers();
+    }
+
+    @GetMapping("/me")
+    public User getMe(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        return userService.getMe(token);
     }
 
     @GetMapping("/{id}")
