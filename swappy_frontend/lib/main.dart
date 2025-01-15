@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Auth Demo',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData(scaffoldBackgroundColor: const Color(0xFFF7FBFF), primarySwatch: Colors.blue),
       home: SplashScreen(), // Start with SplashScreen
       routes: {
         '/register': (context) => RegisterScreen(),

@@ -12,6 +12,34 @@ class SwapService {
     return await secureStorage.read(key: 'token');
   }
 
+  Future<void> cancelSwap(int swapId) async {
+    final token = await getToken();
+
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    try {
+      final response = await http.patch(
+        Uri.parse('$baseUrl/swaps/$swapId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({"swapStatus": "CANCELLED"}),
+      );
+
+      if (response.statusCode == 200) {
+        print('Swap offer cancelled successfully.');
+      } else {
+        throw Exception('Failed to cancel swap offer: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error cancelling swap offer: $e');
+      throw Exception('Error cancelling swap offer');
+    }
+  }
+
   Future<void> submitSwap({
     required int productId,
     required int sellerId,
