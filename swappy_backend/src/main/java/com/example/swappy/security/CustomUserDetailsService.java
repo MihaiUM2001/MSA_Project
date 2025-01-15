@@ -2,7 +2,7 @@ package com.example.swappy.security;
 
 
 import com.example.swappy.model.User;
-import com.example.swappy.repository.UserRepository;
+import com.example.swappy.jpa.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

@@ -122,6 +122,30 @@ class UserService {
     }
   }
 
+  Future<Map<String, dynamic>> getUserProfile() async {
+    final token = await secureStorage.read(key: 'token');
+
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/users/me'), // Replace with your profile endpoint
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print("getUserProfile Response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to fetch profile data');
+    }
+  }
+
   /// Handles HTTP error responses
   void _handleErrorResponse(http.Response response) {
     try {

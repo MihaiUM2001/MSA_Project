@@ -1,17 +1,21 @@
 package com.example.swappy.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Document(indexName = "product")
 public class Product {
 
     @Id
@@ -35,6 +39,7 @@ public class Product {
     private Boolean isVisible;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Swap> swaps;
 
     // Getters and setters
