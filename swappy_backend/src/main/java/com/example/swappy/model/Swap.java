@@ -20,7 +20,6 @@ public class Swap {
     private Long id;
 
     @ManyToOne
-    @JsonIgnore
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
@@ -35,6 +34,8 @@ public class Swap {
     private String swapProductTitle;
     private String swapProductDescription;
     private String swapProductImage;
+
+    private Boolean viewedBySeller;
 
     private double estimatedRetailPrice;
 

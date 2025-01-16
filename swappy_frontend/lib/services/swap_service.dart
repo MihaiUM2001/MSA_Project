@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-
 import '../models/swap_model.dart';
 
 class SwapService {
@@ -12,9 +11,114 @@ class SwapService {
     return await secureStorage.read(key: 'token');
   }
 
+  // Fetch a specific swap by ID
+  Future<Swap> fetchSwapById(int swapId) async {
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/swaps/$swapId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        return Swap.fromJson(data);
+      } else {
+        throw Exception('Failed to fetch swap. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching swap: $e');
+    }
+  }
+
+  Future<void> denySwap(int swapId) async {
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    try {
+      final response = await http.patch(
+        Uri.parse('$baseUrl/swaps/$swapId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({"swapStatus": "DENIED"}),
+      );
+
+      if (response.statusCode == 200) {
+        print('Swap offer cancelled successfully.');
+      } else {
+        throw Exception('Failed to cancel swap offer: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error cancelling swap offer: $e');
+      throw Exception('Error cancelling swap offer');
+    }
+  }
+
+  Future<void> acceptSwap(int swapId) async {
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    try {
+      final response = await http.patch(
+        Uri.parse('$baseUrl/swaps/$swapId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({"swapStatus": "ACCEPTED"}),
+      );
+
+      if (response.statusCode == 200) {
+        print('Swap offer cancelled successfully.');
+      } else {
+        throw Exception('Failed to cancel swap offer: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error cancelling swap offer: $e');
+      throw Exception('Error cancelling swap offer');
+    }
+  }
+
+  Future<List<Swap>> fetchSwapsForBuyer() async {
+    final token = await getToken();
+    if (token == null) throw Exception('No token found');
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/swaps/buyer'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => Swap.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to fetch swaps for buyer. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching swaps for buyer: $e');
+    }
+  }
+
+
   Future<void> cancelSwap(int swapId) async {
     final token = await getToken();
-
     if (token == null) {
       throw Exception('No token found');
     }
@@ -77,6 +181,7 @@ class SwapService {
       throw Exception('Error submitting swap: $e');
     }
   }
+
   Future<List<Swap>> fetchSwapsForProduct(int productId) async {
     final token = await getToken();
     if (token == null) throw Exception('No token found');
@@ -93,10 +198,7 @@ class SwapService {
       print('Response Body: ${response.body}'); // Debugging response
 
       if (response.statusCode == 200) {
-        // Parse the response body as a list of swaps
         final List<dynamic> data = jsonDecode(response.body);
-
-        // Map each item in the list to a Swap object
         return data.map((json) => Swap.fromJson(json)).toList();
       } else {
         throw Exception('Failed to fetch swaps. Status code: ${response.statusCode}');
@@ -106,4 +208,27 @@ class SwapService {
     }
   }
 
+  Future<List<Swap>> fetchSwapsForSeller() async {
+    final token = await getToken();
+    if (token == null) throw Exception('No token found');
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/swaps/seller'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        return data.map((json) => Swap.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to fetch swaps for seller. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      throw Exception('Error fetching swaps for seller: $e');
+    }
+  }
 }

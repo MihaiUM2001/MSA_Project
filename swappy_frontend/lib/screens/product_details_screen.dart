@@ -1,6 +1,5 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart'; // For custom icons
 import '../components/swap_form_page.dart';
 import '../models/product_model.dart';
 import '../models/swap_model.dart';
@@ -31,19 +30,34 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchCurrentUser();
-    _fetchProductDetails();
-    _fetchSwaps();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    try {
+      await Future.wait([
+        _fetchCurrentUser(),
+        _fetchProductDetails(),
+        _fetchSwaps(),
+      ]);
+    } catch (e) {
+      print('Error loading data: $e');
+      setState(() {
+        hasError = true;
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> _fetchCurrentUser() async {
     try {
       final userProfile = await _userService.getUserProfile();
-      print("User Profile: $userProfile"); // Debug log to confirm data
       setState(() {
-        currentUserId = userProfile['id'].toString(); // Convert ID to string
+        currentUserId = userProfile['id']?.toString();
       });
-      print("Current User ID: $currentUserId");
     } catch (e) {
       print('Error fetching user profile: $e');
     }
@@ -54,14 +68,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       final fetchedProduct = await _productService.fetchProductDetails(widget.productId);
       setState(() {
         product = fetchedProduct;
-        isLoading = false;
       });
     } catch (e) {
-      setState(() {
-        hasError = true;
-        isLoading = false;
-      });
       print('Error fetching product details: $e');
+      throw e;
     }
   }
 
@@ -73,6 +83,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       });
     } catch (e) {
       print('Error fetching swaps: $e');
+      throw e;
     }
   }
 
@@ -80,73 +91,66 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     showModalBottomSheet(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return ListView.builder(
-              itemCount: swaps.length,
-              itemBuilder: (context, index) {
-                final swap = swaps[index];
-                final Color statusColor;
+        return ListView.builder(
+          itemCount: swaps.length,
+          itemBuilder: (context, index) {
+            final swap = swaps[index];
+            final Color statusColor;
 
-                // Determine the color based on the status
-                switch (swap.status?.toLowerCase()) {
-                  case 'pending':
-                    statusColor = Colors.orange;
-                    break;
-                  case 'accepted':
-                    statusColor = Colors.green;
-                    break;
-                  case 'denied':
-                  case 'cancelled':
-                    statusColor = Colors.red;
-                    break;
-                  default:
-                    statusColor = Colors.grey;
-                }
+            switch (swap.swapStatus.toLowerCase()) {
+              case 'pending':
+                statusColor = Colors.orange;
+                break;
+              case 'accepted':
+                statusColor = Colors.green;
+                break;
+              case 'denied':
+              case 'cancelled':
+                statusColor = Colors.red;
+                break;
+              default:
+                statusColor = Colors.grey;
+            }
 
-                return ListTile(
-                  leading: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Status color indicator
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: statusColor,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      // Swap image
-                      swap.imageUrl != null
-                          ? Image.network(
-                        swap.imageUrl!,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                      )
-                          : const Icon(Icons.image, size: 50),
-                    ],
+            return ListTile(
+              leading: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: statusColor,
+                    ),
                   ),
-                  title: Text(swap.title ?? 'Untitled Swap'),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(swap.description ?? 'No description provided'),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Status: ${swap.status ?? 'Unknown'}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: statusColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 8),
+                  swap.swapProductImage.isNotEmpty
+                      ? Image.network(
+                    swap.swapProductImage,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.cover,
+                  )
+                      : const Icon(Icons.image, size: 50),
+                ],
+              ),
+              title: Text(swap.swapProductTitle),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(swap.swapProductDescription),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Status: ${swap.swapStatus}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: statusColor,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                );
-              },
+                ],
+              ),
             );
           },
         );
@@ -156,10 +160,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Debug: Print current user ID and product seller ID
-    print("Current User ID: $currentUserId");
-    print("Product Seller ID: ${product?.seller?.id}");
-
     if (isLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Product Details')),
@@ -174,17 +174,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       );
     }
 
-    // Check if the current user owns the product
-    final bool isOwner = currentUserId != null &&
-        product!.seller?.id != null &&
-        currentUserId == product!.seller!.id.toString();
-
-    // Debug: Print whether the user is the owner
-    print("Is Owner: $isOwner");
+    final bool isOwner = currentUserId == product!.seller!.id.toString();
+    final bool isSold = product!.isSold ?? false;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(product!.productTitle ?? 'Product Details'),
+        title: Text(product!.productTitle!),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -192,26 +187,58 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Product Image
-            product!.productImage != null
-                ? Image.network(
-              product!.productImage!,
-              height: 300,
-              width: double.infinity,
-              fit: BoxFit.cover,
+            product!.productImage!.isNotEmpty
+                ? ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.network(
+                product!.productImage!,
+                height: 300,
+                width: double.infinity,
+                fit: BoxFit.cover,
+              ),
             )
                 : Container(
               height: 300,
-              color: Colors.grey[300],
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: const Center(child: Text('No Image Available')),
             ),
             const SizedBox(height: 16),
+
+            // Sold Indicator
+            if (isSold)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red[100],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red[300]!),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.warning, color: Colors.red, size: 24),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'This product is sold and no longer available for swaps.',
+                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            const SizedBox(height: 16),
+
             // Product Title
             Text(
-              product!.productTitle ?? 'Untitled Product',
+              product!.productTitle!,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            // Product Views
+
+            // Views
             Row(
               children: [
                 const Icon(Icons.visibility, size: 18, color: Colors.grey),
@@ -223,26 +250,34 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               ],
             ),
             const SizedBox(height: 16),
+
             // Product Details
-            if (product!.productDescription != null) ...[
-              const Text(
+            if (product!.productDescription!.isNotEmpty)
+              _buildSection(
+                Feather.file_text,
                 'Product Details',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
                 product!.productDescription!,
-                style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
-              const SizedBox(height: 16),
-            ],
+
+            // Swap Preference
+            if (product!.swapPreference != null && product!.swapPreference!.isNotEmpty)
+              _buildSection(
+                Feather.refresh_ccw,
+                'Swap Preference',
+                product!.swapPreference!,
+              ),
+
+            // Estimated Retail Price
+            _buildSection(
+              Feather.dollar_sign,
+              'Estimated Retail Price',
+              'RON ${product!.estimatedRetailPrice?.toStringAsFixed(2)}',
+            ),
+
             // Seller Details
-            if (product!.seller != null) ...[
-              const Text(
-                'Seller Details',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
+            _buildSection(
+              Feather.user,
+              'Seller Details',
               Row(
                 children: [
                   product!.seller!.profilePictureUrl != null
@@ -251,6 +286,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     radius: 25,
                   )
                       : const CircleAvatar(
+                    backgroundColor: const Color(0xFFB7ADFF),
                     child: Icon(Icons.person, size: 30),
                     radius: 25,
                   ),
@@ -259,14 +295,14 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        product!.seller!.fullName ?? 'Unknown Seller',
+                        product!.seller!.fullName!,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        product!.seller!.email ?? '',
+                        product!.seller!.email!,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
@@ -276,12 +312,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-            ],
-            // Active Swaps Preview
-            if (!isOwner && swaps.isNotEmpty)
+            ),
+            const SizedBox(height: 16),
+
+            // Active Swaps (only if not sold)
+            if (!isSold && !isOwner && swaps.isNotEmpty)
               GestureDetector(
-                onTap: () => _openSwapsList(),
+                onTap: _openSwapsList,
                 child: Row(
                   children: [
                     SizedBox(
@@ -296,7 +333,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                             return Positioned(
                               top: index * 10.0,
                               left: index * 20.0,
-                              child: _buildSwapRectangle(swap.imageUrl),
+                              child: _buildSwapRectangle(swap.swapProductImage),
                             );
                           },
                         ),
@@ -305,7 +342,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'You have ${swaps.length} active swap(s)',
+                        'You have offered ${swaps.length} swap(s)',
                         style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ),
@@ -313,8 +350,9 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 ),
               ),
             const SizedBox(height: 16),
-            // Start Swap Button
-            if (!isOwner)
+
+            // Start Swap Button (only if not sold)
+            if (!isSold && !isOwner)
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -322,7 +360,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     MaterialPageRoute(
                       builder: (context) => SwapFormPage(
                         productId: widget.productId,
-                        sellerId: product!.seller!.id!,
+                        sellerId: product!.seller!.id,
                       ),
                     ),
                   );
@@ -333,15 +371,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  elevation: 5,
                 ),
                 child: const Text(
                   'Start Swap',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
           ],
@@ -350,22 +383,38 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
+  Widget _buildSection(IconData icon, String title, dynamic content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 20, color: Colors.blue),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        content is Widget ? content : Text(content, style: const TextStyle(fontSize: 16)),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
 
-
-
-  Widget _buildSwapRectangle(String? imageUrl, {double height = 100, double width = 100}) {
+  Widget _buildSwapRectangle(String imageUrl, {double height = 100, double width = 100}) {
     return Container(
       height: height,
       width: width,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: Colors.grey[300],
-        image: imageUrl != null
-            ? DecorationImage(
+        image: DecorationImage(
           image: NetworkImage(imageUrl),
           fit: BoxFit.cover,
-        )
-            : null,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),

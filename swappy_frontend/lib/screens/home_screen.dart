@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../components/custom_app_bar.dart';
+import '../components/product_card_skeleton.dart';
 import '../models/product_model.dart';
 import '../services/product_service.dart';
 import '../components/product_card.dart';
@@ -36,25 +36,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() {
       isLoading = true;
-      print("Loading products for page: $currentPage...");
     });
 
     try {
-      final List<Product> newProducts = await _productService.fetchProducts(page: currentPage, pageSize: pageSize);
+      final List<Product> newProducts =
+      await _productService.fetchProducts(page: currentPage, pageSize: pageSize);
 
       setState(() {
         allProducts.addAll(newProducts);
         currentPage++;
 
-        // Stop loading more if no products are returned
         if (newProducts.length < pageSize) {
           hasMore = false;
         }
-
-        print("Loaded ${newProducts.length} products, total loaded: ${allProducts.length}");
       });
     } catch (e) {
-      print('Error loading products: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to load products')),
       );
@@ -71,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
-          // SliverAppBar with centered logo and left-aligned "For You" title
+          // SliverAppBar
           SliverAppBar(
             floating: true,
             snap: true,
@@ -84,16 +80,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Centered Logo with Padding
                   Center(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 24.0), // Adjust top padding
+                      padding: const EdgeInsets.only(top: 29.0),
                       child: Image.asset(
-                        'assets/images/app_logo.png', // Replace with your logo asset path
-                        height: 40, // Adjust the size as needed
+                        'assets/images/app_logo.png',
+                        height: 35,
                       ),
                     ),
-                  ), // Space between logo and "For You"
+                  ),
                   const Text(
                     'For You',
                     style: TextStyle(
@@ -106,34 +101,34 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // SliverList for the product list
+          // Product List
           SliverList(
             delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                if (index == allProducts.length) {
-                  if (isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (!hasMore) {
-                    return const Center(child: Text('No more products to load'));
-                  } else {
-                    return const SizedBox.shrink();
-                  }
+                if (index < allProducts.length) {
+                  final product = allProducts[index];
+                  return ProductCard(product: product);
+                } else if (isLoading) {
+                  // Show multiple skeleton cards
+                  return Column(
+                    children: List.generate(
+                      6, // Number of skeleton cards to show
+                          (index) => const ProductSkeletonCard(),
+                    ),
+                  );
+                } else if (!hasMore) {
+                  return const Center(child: Text('No more products to load'));
+                } else {
+                  return const SizedBox.shrink();
                 }
-
-                final product = allProducts[index];
-                return ProductCard(product: product);
               },
-              childCount: allProducts.length + 1, // Add an extra item for the loading indicator
+              childCount: allProducts.length + (isLoading ? 1 : 0),
             ),
           ),
         ],
       ),
     );
   }
-
-
-
-
 
   @override
   void dispose() {

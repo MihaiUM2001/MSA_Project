@@ -31,8 +31,18 @@ public class SwapController {
     }
 
     @GetMapping("/{id}")
-    public Swap getSwapById(@PathVariable Long id) {
-        return swapService.getSwapById(id);
+    public Swap getSwapById(@PathVariable Long id, @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        return swapService.getSwapById(id, token);
+    }
+
+    @GetMapping("/seller")
+    public List<Swap> getSwapsAsSeller( @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        return swapService.getSwapsAsSeller(token);
+    }
+
+    @GetMapping("/buyer")
+    public List<Swap> getSwapsAsBuyer( @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        return swapService.getSwapsAsBuyer(token);
     }
 
     @GetMapping("/product/{id}")

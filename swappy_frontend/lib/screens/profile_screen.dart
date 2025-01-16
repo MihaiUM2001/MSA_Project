@@ -1,11 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../services/user_service.dart';
-import 'my_products_screen.dart'; // Create this screen for your own products
-import 'my_offers_screen.dart'; // Create this screen for your own offers
+import 'my_products_screen.dart';
+import 'my_offers_screen.dart';
+import 'edit_profile_screen.dart'; // Import the Edit Profile Screen
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
   final UserService _userService = UserService();
+  String? _profilePictureUrl;
+  String? _fullName;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    try {
+      final userProfile = await _userService.getUserProfile();
+      setState(() {
+        _profilePictureUrl = userProfile['profilePictureURL'];
+        _fullName = userProfile['fullName'] ?? 'Unknown User';
+      });
+    } catch (e) {
+      print('Error fetching user profile: $e');
+    }
+  }
 
   Future<void> _logout(BuildContext context) async {
     await _userService.logoutUser();
@@ -14,101 +39,160 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>>(
-      future: _userService.getUserProfile(), // Implement getUserProfile in UserService
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+    final Color primaryColor = const Color(0xFF201089); // Primary color
+    final Color accentColor = const Color(0xFF201089); // Accent color
+    final Color backgroundColor = const Color(0xFFF7FBFF);
 
-        if (snapshot.hasError || !snapshot.hasData) {
-          return Scaffold(
-            body: Center(
-              child: Text(
-                'Failed to load profile. Please try again.',
-                style: const TextStyle(fontSize: 16, color: Colors.red),
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      body: CustomScrollView(
+        slivers: [
+          // AppBar with Profile Info
+          SliverAppBar(
+            backgroundColor: primaryColor,
+            expandedHeight: 200,
+            floating: true,
+            pinned: false,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundImage: _profilePictureUrl != null
+                              ? NetworkImage(_profilePictureUrl!)
+                              : null,
+                          backgroundColor: Colors.grey[300],
+                          child: _profilePictureUrl == null
+                              ? const Icon(Icons.person, size: 40, color: Colors.white)
+                              : null,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            _fullName ?? 'Unknown User',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          );
-        }
-
-        final profileData = snapshot.data!;
-        final String fullName = profileData['fullName'] ?? 'Unknown User';
-        final String? profilePicture = profileData['profilePicture'];
-
-        return Scaffold(
-          appBar: AppBar(title: const Text('Profile')),
-          body: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                // Profile Picture
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage: profilePicture != null
-                      ? NetworkImage(profilePicture)
-                      : null,
-                  child: profilePicture == null
-                      ? const Icon(Icons.person, size: 50)
-                      : null,
-                ),
-                const SizedBox(height: 16),
-
-                // Full Name
-                Text(
-                  fullName,
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 32),
-
-                // My Products Button
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => MyProductsScreen()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(50),
-                    backgroundColor: Colors.blue,
+          ),
+          // Buttons and Profile Options
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 32),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => MyProductsScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      backgroundColor: accentColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    icon: const Icon(Icons.shopping_bag, color: Colors.white),
+                    label: const Text(
+                      'My Products',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
                   ),
-                  child: const Text('My Products'),
-                ),
-                const SizedBox(height: 16),
-
-                // My Offers Button
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => MyOffersScreen()),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(50),
-                    backgroundColor: Colors.green,
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => MyOffersScreen()),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      backgroundColor: primaryColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    icon: const Icon(Icons.swap_horiz, color: Colors.white),
+                    label: const Text(
+                      'My Offers',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
                   ),
-                  child: const Text('My Offers'),
-                ),
-                const SizedBox(height: 32),
-
-                // Log Out Button
-                ElevatedButton(
-                  onPressed: () => _logout(context),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(50),
-                    backgroundColor: Colors.red,
+                  const SizedBox(height: 16),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditProfileScreen(
+                            fullName: _fullName,
+                            profilePictureUrl: _profilePictureUrl,
+                          ),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      backgroundColor: Colors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    icon: const Icon(Icons.edit, color: Colors.white),
+                    label: const Text(
+                      'Edit Profile',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
                   ),
-                  child: const Text('Log Out'),
-                ),
-              ],
+                  const SizedBox(height: 32),
+                  OutlinedButton.icon(
+                    onPressed: () => _logout(context),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      side: BorderSide(color: Colors.red[400]!),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    icon: const Icon(Icons.logout, color: Colors.red),
+                    label: const Text(
+                      'Log Out',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.red,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

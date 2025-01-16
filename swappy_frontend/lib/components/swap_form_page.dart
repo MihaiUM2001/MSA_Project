@@ -10,7 +10,9 @@ class SwapFormPage extends StatefulWidget {
   final int productId;
   final int sellerId;
 
-  const SwapFormPage({Key? key, required this.productId, required this.sellerId}) : super(key: key);
+  const SwapFormPage(
+      {Key? key, required this.productId, required this.sellerId})
+      : super(key: key);
 
   @override
   _SwapFormPageState createState() => _SwapFormPageState();
@@ -43,7 +45,8 @@ class _SwapFormPageState extends State<SwapFormPage> {
 
   Future<void> _fetchProductDetails() async {
     try {
-      final product = await _productService.fetchProductDetails(widget.productId);
+      final product =
+          await _productService.fetchProductDetails(widget.productId);
       setState(() {
         productDetails = product;
       });
@@ -59,7 +62,9 @@ class _SwapFormPageState extends State<SwapFormPage> {
     try {
       final products = await _productService.fetchUserProducts();
       setState(() {
-        _userProducts = products;
+        // Filter out products that are sold
+        _userProducts =
+            products.where((product) => product.isSold == false).toList();
       });
     } catch (e) {
       print('Error fetching user products: $e');
@@ -105,7 +110,10 @@ class _SwapFormPageState extends State<SwapFormPage> {
 
   Future<void> _submitSwap() async {
     if ((_useExistingProduct && _selectedProduct == null) ||
-        (!_useExistingProduct && (_uploadedImageUrl == null || _titleController.text.isEmpty || _priceController.text.isEmpty))) {
+        (!_useExistingProduct &&
+            (_uploadedImageUrl == null ||
+                _titleController.text.isEmpty ||
+                _priceController.text.isEmpty))) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill in all required fields')),
       );
@@ -113,12 +121,18 @@ class _SwapFormPageState extends State<SwapFormPage> {
     }
 
     try {
-      final title = _useExistingProduct ? _selectedProduct!.productTitle! : _titleController.text;
-      final description = _useExistingProduct ? _selectedProduct!.productDescription! : _descriptionController.text;
+      final title = _useExistingProduct
+          ? _selectedProduct!.productTitle!
+          : _titleController.text;
+      final description = _useExistingProduct
+          ? _selectedProduct!.productDescription!
+          : _descriptionController.text;
       final price = _useExistingProduct
           ? _selectedProduct!.estimatedRetailPrice ?? 0.0
           : double.parse(_priceController.text);
-      final imageUrl = _useExistingProduct ? _selectedProduct!.productImage : _uploadedImageUrl!;
+      final imageUrl = _useExistingProduct
+          ? _selectedProduct!.productImage
+          : _uploadedImageUrl!;
 
       await _swapService.submitSwap(
         productId: widget.productId,
@@ -148,130 +162,153 @@ class _SwapFormPageState extends State<SwapFormPage> {
       body: productDetails == null
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Swap With',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    image: productDetails!.productImage != null
-                        ? DecorationImage(
-                      image: NetworkImage(productDetails!.productImage!),
-                      fit: BoxFit.cover,
-                    )
-                        : null,
-                    color: Colors.grey[300],
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Swap With',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  const SizedBox(height: 16),
+                  Row(
                     children: [
-                      Text(
-                        productDetails!.productTitle ?? 'Untitled Product',
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          image: productDetails!.productImage != null
+                              ? DecorationImage(
+                                  image: NetworkImage(
+                                      productDetails!.productImage!),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                          color: Colors.grey[300],
+                        ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Estimated Value: RON${productDetails!.estimatedRetailPrice?.toStringAsFixed(2) ?? 'N/A'}',
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              productDetails!.productTitle ??
+                                  'Untitled Product',
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Estimated Value: RON${productDetails!.estimatedRetailPrice?.toStringAsFixed(2) ?? 'N/A'}',
+                              style: const TextStyle(
+                                  fontSize: 14, color: Colors.grey),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            SwitchListTile(
-              title: const Text('Use Existing Product'),
-              value: _useExistingProduct,
-              onChanged: (value) {
-                setState(() {
-                  _useExistingProduct = value;
-                  _selectedProduct = null;
-                  _uploadedImageUrl = null;
-                  _titleController.clear();
-                  _descriptionController.clear();
-                  _priceController.clear();
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            if (_useExistingProduct)
-              DropdownButton<Product>(
-                hint: const Text('Select a Product'),
-                value: _selectedProduct,
-                isExpanded: true,
-                onChanged: (product) {
-                  setState(() {
-                    _selectedProduct = product;
-                  });
-                },
-                items: _userProducts.map((product) {
-                  return DropdownMenuItem(
-                    value: product,
-                    child: Text(product.productTitle ?? 'Untitled Product'),
-                  );
-                }).toList(),
-              )
-            else
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: Container(
-                      height: 150,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey),
-                        color: Colors.grey[300],
-                      ),
-                      child: _selectedImage != null
-                          ? Image.file(_selectedImage!, fit: BoxFit.cover)
-                          : const Center(child: Icon(Icons.add, size: 50)),
+                  const SizedBox(height: 32),
+                  SwitchListTile(
+                    activeColor: const Color(0xFF201089),
+                    title: const Text('Use Existing Product'),
+                    value: _useExistingProduct,
+                    onChanged: (value) {
+                      setState(() {
+                        _useExistingProduct = value;
+                        _selectedProduct = null;
+                        _uploadedImageUrl = null;
+                        _titleController.clear();
+                        _descriptionController.clear();
+                        _priceController.clear();
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  if (_useExistingProduct)
+                    DropdownButton<Product>(
+                      hint: const Text('Select a Product'),
+                      value: _selectedProduct,
+                      isExpanded: true,
+                      onChanged: (product) {
+                        setState(() {
+                          _selectedProduct = product;
+                        });
+                      },
+                      items: _userProducts.map((product) {
+                        return DropdownMenuItem(
+                          value: product,
+                          child:
+                              Text(product.productTitle ?? 'Untitled Product'),
+                        );
+                      }).toList(),
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: Container(
+                            height: 150,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.grey),
+                              color: Colors.grey[300],
+                            ),
+                            child: _selectedImage != null
+                                ? Image.file(_selectedImage!, fit: BoxFit.cover)
+                                : const Center(
+                                    child: Icon(Icons.add, size: 50)),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        if (_isUploading)
+                          const Center(child: CircularProgressIndicator()),
+                        const Text('Product Title'),
+                        TextField(controller: _titleController),
+                        const SizedBox(height: 16),
+                        const Text('Product Description'),
+                        TextField(
+                          controller: _descriptionController,
+                          maxLines: 3,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text('Estimated Retail Price'),
+                        TextField(
+                          controller: _priceController,
+                          keyboardType:
+                              TextInputType.numberWithOptions(decimal: true),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  if (_isUploading) const Center(child: CircularProgressIndicator()),
-                  const Text('Product Title'),
-                  TextField(controller: _titleController),
-                  const SizedBox(height: 16),
-                  const Text('Product Description'),
-                  TextField(
-                    controller: _descriptionController,
-                    maxLines: 3,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text('Estimated Retail Price'),
-                  TextField(
-                    controller: _priceController,
-                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                  const SizedBox(height: 32),
+                  ElevatedButton(
+                    onPressed: _submitSwap,
+                    child: const Text(
+                      'Send Offer',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size.fromHeight(50),
+                      backgroundColor: const Color(0xFF201089),
+                      // Updated button color
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
                   ),
                 ],
               ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: _submitSwap,
-              child: const Text('Send Offer'),
-              style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
             ),
-          ],
-        ),
-      ),
     );
   }
 

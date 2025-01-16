@@ -1,5 +1,4 @@
-import 'dart:ui';
-
+import 'dart:async'; // For Timer
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'search_screen.dart';
@@ -7,6 +6,7 @@ import 'add_product_screen.dart';
 import 'offers_screen.dart'; // Replace with your OffersScreen
 import 'profile_screen.dart'; // Replace with your ProfileScreen
 import '../services/user_service.dart';
+import '../services/swap_service.dart';
 
 class MainNavigation extends StatefulWidget {
   @override
@@ -16,14 +16,17 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> {
   int _currentIndex = 0;
   String? _profilePictureUrl;
+  bool _hasUnseenOffers = false;
+  Timer? _timer;
   final UserService _userService = UserService();
+  final SwapService _swapService = SwapService();
 
   final List<Widget> _pages = [
-    HomeScreen(), // Home page
-    SearchScreen(), // Search page
-    AddProductScreen(), // Add product page
-    OffersScreen(), // Offers page
-    ProfileScreen(), // Profile page
+    HomeScreen(),
+    SearchScreen(),
+    AddProductScreen(),
+    OffersScreen(),
+    ProfileScreen(),
   ];
 
   final List<String> _iconPathsSelected = [
@@ -46,18 +49,43 @@ class _MainNavigationState extends State<MainNavigation> {
   void initState() {
     super.initState();
     _fetchUserProfile();
+    _fetchUnseenOffers();
+    _startUnseenOffersTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   Future<void> _fetchUserProfile() async {
     try {
       final userProfile = await _userService.getUserProfile();
-      print('User Profile Response: $userProfile'); // Debug log entire response
       setState(() {
         _profilePictureUrl = userProfile['profilePictureURL'];
       });
     } catch (e) {
       print("Error fetching profile picture: $e");
     }
+  }
+
+  Future<void> _fetchUnseenOffers() async {
+    try {
+      final swaps = await _swapService.fetchSwapsForSeller();
+      final hasUnseen = swaps.any((swap) => !swap.viewedBySeller);
+      setState(() {
+        _hasUnseenOffers = hasUnseen;
+      });
+    } catch (e) {
+      print("Error fetching unseen offers: $e");
+    }
+  }
+
+  void _startUnseenOffersTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      _fetchUnseenOffers();
+    });
   }
 
   void _onTabTapped(int index) {
@@ -70,25 +98,24 @@ class _MainNavigationState extends State<MainNavigation> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pages[_currentIndex],
-      bottomNavigationBar: Stack(
-        children: [
-          // Blur effect for the navigation bar area
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.transparent,
+        elevation: 0,
+        child: SizedBox(
+          height: 90, // Increase height for better spacing
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(_pages.length, (index) {
+              final isSelected = _currentIndex == index;
 
-          // Actual navigation bar
-          BottomAppBar(
-            color: Colors.transparent, // Transparent to allow the blur to show
-            elevation: 0,
-            child: SizedBox(
-              height: 80,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: List.generate(_pages.length, (index) {
-                  final isSelected = _currentIndex == index;
-                  if (index != _pages.length - 1) {
-                    // Non-profile tabs
-                    return GestureDetector(
-                      onTap: () => _onTabTapped(index),
-                      child: Column(
+              // Notification Bell Tab (Offers Tab)
+              if (index == 3) {
+                return GestureDetector(
+                  onTap: () => _onTabTapped(index),
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Column(
                         mainAxisSize: MainAxisSize.min,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -99,49 +126,80 @@ class _MainNavigationState extends State<MainNavigation> {
                             height: 22,
                             width: 22,
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 8), // Add extra spacing below the icon
                         ],
                       ),
-                    );
-                  } else {
-                    // Profile tab with dynamic image and stroke
-                    return GestureDetector(
-                      onTap: () => _onTabTapped(index),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            height: 28,
-                            width: 28,
-                            decoration: BoxDecoration(
+                      if (_hasUnseenOffers)
+                        Positioned(
+                          bottom: 0, // Ensure the dot stays inside the navigation bar
+                          child: Container(
+                            width: 4,
+                            height: 4,
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
                               shape: BoxShape.circle,
-                              border: isSelected
-                                  ? Border.all(color: Colors.black87, width: 2)
-                                  : null,
-                              image: _profilePictureUrl != null
-                                  ? DecorationImage(
-                                      image: NetworkImage(_profilePictureUrl!),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : null,
-                              color: Colors.grey[300],
                             ),
-                            child: _profilePictureUrl == null
-                                ? const Icon(Icons.person,
-                                    color: Colors.white, size: 20)
-                                : null,
                           ),
-                          const SizedBox(height: 4),
-                        ],
+                        ),
+                    ],
+                  ),
+                );
+              } else if (index != _pages.length - 1) {
+                // Non-profile tabs
+                return GestureDetector(
+                  onTap: () => _onTabTapped(index),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        isSelected
+                            ? _iconPathsSelected[index]
+                            : _iconPathsUnselected[index],
+                        height: 22,
+                        width: 22,
                       ),
-                    );
-                  }
-                }),
-              ),
-            ),
+                      const SizedBox(height: 4),
+                    ],
+                  ),
+                );
+              } else {
+                // Profile tab
+                return GestureDetector(
+                  onTap: () => _onTabTapped(index),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        height: 28,
+                        width: 28,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: isSelected
+                              ? Border.all(color: const Color(0xFF201089), width: 2)
+                              : null,
+                          image: _profilePictureUrl != null
+                              ? DecorationImage(
+                            image: NetworkImage(_profilePictureUrl!),
+                            fit: BoxFit.cover,
+                          )
+                              : null,
+                          color: Colors.grey[300],
+                        ),
+                        child: _profilePictureUrl == null
+                            ? const Icon(Icons.person,
+                            color: Colors.white, size: 20)
+                            : null,
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                  ),
+                );
+              }
+            }),
           ),
-        ],
+        ),
       ),
     );
   }
