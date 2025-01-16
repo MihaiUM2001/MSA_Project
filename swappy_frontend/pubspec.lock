@@ -243,6 +243,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_vector_icons:
+    dependency: "direct main"
+    description:
+      name: flutter_vector_icons
+      sha256: "20a77e282f8cb438c8edcee4eec85d8497d5f4cbeb07d116e9d2d01c9edfc5e2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   flutter_web_plugins:
     dependency: transitive
     description: flutter
@@ -544,6 +552,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.1"
+  shimmer:
+    dependency: "direct main"
+    description:
+      name: shimmer
+      sha256: "5f88c883a22e9f9f299e5ba0e4f7e6054857224976a5d9f839d4ebdc94a14ac9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   sky_engine:
     dependency: transitive
     description: flutter

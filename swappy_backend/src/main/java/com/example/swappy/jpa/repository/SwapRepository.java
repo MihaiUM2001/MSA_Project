@@ -9,5 +9,7 @@ public interface SwapRepository extends JpaRepository<Swap, Long> {
     Swap findOneById(Long id);
     List<Swap> findAllByProductId(Long id);
     List<Swap> findAllByProductIdAndAndBuyerId(Long productId, Long buyerId);
+    List<Swap> findAllBySellerId(Long sellerId);
+    List<Swap> findAllByBuyerId(Long sellerId);
 }
 

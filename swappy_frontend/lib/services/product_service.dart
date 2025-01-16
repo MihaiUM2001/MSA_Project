@@ -139,6 +139,48 @@ class ProductService {
     }
   }
 
+  Future<void> updateProduct({
+    required int productId,
+    required String? imageUrl,
+    required String title,
+    required String description,
+    required String swapPreference,
+    required double estimatedRetailPrice,
+    required bool isVisible,
+  }) async {
+    final token = await getToken();
+
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    try {
+      final response = await http.patch(
+        Uri.parse('$baseUrl/products/$productId'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'productImage': imageUrl,
+          'productTitle': title,
+          'productDescription': description,
+          'swapPreference': swapPreference,
+          'estimatedRetailPrice': estimatedRetailPrice,
+          'isVisible': isVisible
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update product: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error updating product: $e');
+      rethrow;
+    }
+  }
+
+
   // New Method: Fetch User's Own Products
   Future<List<Product>> fetchUserProducts() async {
     final token = await getToken();

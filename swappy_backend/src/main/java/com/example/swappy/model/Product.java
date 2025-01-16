@@ -37,11 +37,11 @@ public class Product {
     private String publishDate;
     private Integer numberOfViews;
     private Boolean isVisible;
+    private Boolean isSold;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<Swap> swaps;
 
-    // Getters and setters
 }
 

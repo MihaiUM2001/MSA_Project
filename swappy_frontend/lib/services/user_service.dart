@@ -6,6 +6,33 @@ class UserService {
   final String baseUrl = "http://10.0.2.2:8000/api";
   final FlutterSecureStorage secureStorage = FlutterSecureStorage();
 
+  Future<void> updateUserProfile(Map<String, dynamic> updates) async {
+    final token = await secureStorage.read(key: 'token');
+
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    try {
+      final response = await http.patch(
+        Uri.parse('$baseUrl/users/me'), // Assuming /me endpoint is for the current user
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(updates),
+      );
+
+      if (response.statusCode == 200) {
+        print('Profile updated successfully');
+      } else {
+        _handleErrorResponse(response);
+      }
+    } catch (error) {
+      throw Exception("Failed to update profile: ${_extractErrorMessage(error)}");
+    }
+  }
+  
   /// Registers a new user
   Future<void> createUser(
       String fullName, String phoneNumber, String email, String password) async {

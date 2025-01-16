@@ -1,5 +1,6 @@
 package com.example.swappy.service;
 
+import com.example.swappy.dto.UserUpdateRequest;
 import com.example.swappy.exception.user.NoSuchUserExistsException;
 import com.example.swappy.exception.user.UserAlreadyExistsException;
 import com.example.swappy.model.User;
@@ -28,6 +29,30 @@ public class UserService {
         String email = getEmail(token);
 
         return userRepository.findByEmail(email);
+    }
+
+    public User updateMe(String token, UserUpdateRequest userUpdateRequest) {
+        String email = getEmail(token);
+
+        User user = userRepository.findByEmail(email);
+
+        if(userUpdateRequest.getFullName() != null){
+            user.setFullName(userUpdateRequest.getFullName());
+        }
+
+        if(userUpdateRequest.getEmail() != null) {
+            user.setEmail(userUpdateRequest.getEmail());
+        }
+
+        if( userUpdateRequest.getPhoneNumber() != null) {
+            user.setPhoneNumber(userUpdateRequest.getPhoneNumber());
+        }
+
+        if(userUpdateRequest.getProfilePictureURL() != null) {
+            user.setProfilePictureURL(userUpdateRequest.getProfilePictureURL());
+        }
+
+       return userRepository.save(user);
     }
 
     public User getUserById(Long id) {

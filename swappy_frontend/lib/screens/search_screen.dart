@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:swappy_frontend/components/product_card_search.dart';
-import '../components/custom_app_bar.dart';
+import '../components/product_card_search.dart';
 import '../models/product_model.dart';
 import '../services/product_service.dart';
-import '../components/product_card.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -22,14 +20,6 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     _loadSearchHistory();
-    _searchController.addListener(_handleTypingSearch);
-  }
-
-  @override
-  void dispose() {
-    _searchController.removeListener(_handleTypingSearch);
-    _searchController.dispose();
-    super.dispose();
   }
 
   Future<void> _loadSearchHistory() async {
@@ -42,7 +32,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _saveSearchQuery(String query) async {
     final prefs = await SharedPreferences.getInstance();
     if (!_searchHistory.contains(query)) {
-      _searchHistory.insert(0, query); // Insert at the top of the list
+      _searchHistory.insert(0, query);
       await prefs.setStringList('searchHistory', _searchHistory);
     }
   }
@@ -73,12 +63,6 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
-  void _handleTypingSearch() {
-    if (_searchController.text.isNotEmpty) {
-      _performSearch(_searchController.text, addToHistory: false);
-    }
-  }
-
   void _clearSearch() {
     setState(() {
       _searchController.clear();
@@ -101,72 +85,110 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            // Search bar with "X" button
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _searchController,
-                    onSubmitted: (query) {
-                      if (query.isNotEmpty) {
-                        _performSearch(query, addToHistory: true);
-                      }
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Search',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.search),
+      body: CustomScrollView(
+        slivers: [
+          // Custom App Bar matching HomeScreen
+          SliverAppBar(
+            floating: true,
+            snap: true,
+            pinned: false,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 16.0, bottom: 12.0),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 29.0),
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        height: 35,
+                      ),
                     ),
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: _clearSearch,
-                  tooltip: 'Clear search',
-                ),
-              ],
+                  const Text(
+                    'Search',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 10),
-            // Show search history if no search is in progress
-            if (_searchController.text.isEmpty && _searchHistory.isNotEmpty)
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _searchHistory.length,
-                  itemBuilder: (context, index) {
-                    final query = _searchHistory[index];
-                    return ListTile(
-                      title: Text(query),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => _deleteHistoryItem(query),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  // Search bar
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _searchController,
+                          onSubmitted: (query) {
+                            if (query.isNotEmpty) {
+                              _performSearch(query, addToHistory: true);
+                            }
+                          },
+                          decoration: const InputDecoration(
+                            labelText: 'Search',
+                            border: OutlineInputBorder(),
+                            prefixIcon: Icon(Icons.search),
+                          ),
+                        ),
                       ),
-                      onTap: () => _handleSearchHistoryTap(query),
-                    );
-                  },
-                ),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: _clearSearch,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Search History
+                  if (_searchController.text.isEmpty && _searchHistory.isNotEmpty)
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _searchHistory.length,
+                      itemBuilder: (context, index) {
+                        final query = _searchHistory[index];
+                        return ListTile(
+                          title: Text(query),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => _deleteHistoryItem(query),
+                          ),
+                          onTap: () => _handleSearchHistoryTap(query),
+                        );
+                      },
+                    ),
+                  // Search Results
+                  if (_searchController.text.isNotEmpty || _searchResults.isNotEmpty)
+                    _isLoading
+                        ? const Center(child: CircularProgressIndicator())
+                        : _searchResults.isEmpty
+                        ? const Center(child: Text('No results found'))
+                        : ListView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: _searchResults.length,
+                      itemBuilder: (context, index) {
+                        final product = _searchResults[index];
+                        return ProductCardSearch(product: product);
+                      },
+                    ),
+                ],
               ),
-            // Show search results
-            if (_searchController.text.isNotEmpty || _searchResults.isNotEmpty)
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _searchResults.isEmpty
-                    ? const Center(child: Text('No results found'))
-                    : ListView.builder(
-                  itemCount: _searchResults.length,
-                  itemBuilder: (context, index) {
-                    final product = _searchResults[index];
-                    return ProductCardSearch(product: product);
-                  },
-                ),
-              ),
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }
