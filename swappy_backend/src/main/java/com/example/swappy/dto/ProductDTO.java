@@ -22,4 +22,5 @@ public class ProductDTO {
     private Boolean isVisible;
     private String sellerName;
     private String sellerProfilePic;
+    private Boolean isSold;
 }

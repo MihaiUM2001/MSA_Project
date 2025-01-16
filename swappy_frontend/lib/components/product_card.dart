@@ -9,6 +9,13 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+
+    // Don't render the card if isVisible is false
+    if (!(product.isVisible ?? true)) {
+      return const SizedBox.shrink(); // Return an empty widget
+    }
+
     return GestureDetector(
       onTap: () {
         // Navigate to product details
@@ -25,47 +32,47 @@ class ProductCard extends StatelessWidget {
           );
         }
       },
-      child: Card(
-        color: const Color(0xFFF7FBFF),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        margin: const EdgeInsets.symmetric(vertical: 8.0),
-        elevation: 0, // Remove shadow
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Seller's Info
-            Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: Row(
-                children: [
-                  // Seller's Profile Picture
-                  CircleAvatar(
-                    radius: 16,
-                    backgroundImage: product.seller?.profilePictureUrl != null
-                        ? NetworkImage(product.seller!.profilePictureUrl!)
-                        : null,
-                    backgroundColor: Colors.grey[300],
-                    child: product.seller?.profilePictureUrl == null
-                        ? const Icon(Icons.person, color: Colors.white)
-                        : null,
-                  ),
-                  const SizedBox(width: 10),
-                  // Seller's Name
-                  Expanded(
-                    child: Text(
-                      product.seller?.fullName ?? "Unknown Seller",
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
+      child: Stack(
+        children: [
+          Card(
+            color: const Color(0xFFF7FBFF),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
-            // Product Image with Title Overlay
-            Stack(
+            margin: const EdgeInsets.symmetric(vertical: 8.0),
+            elevation: 0, // Remove shadow
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Seller's Info
+                Padding(
+                  padding: const EdgeInsets.all(14.0),
+                  child: Row(
+                    children: [
+                      // Seller's Profile Picture
+                      CircleAvatar(
+                        radius: 16,
+                        backgroundImage: product.seller?.profilePictureUrl != null
+                            ? NetworkImage(product.seller!.profilePictureUrl!)
+                            : null,
+                        backgroundColor: Colors.grey[300],
+                        child: product.seller?.profilePictureUrl == null
+                            ? const Icon(Icons.person, color: Colors.white)
+                            : null,
+                      ),
+                      const SizedBox(width: 10),
+                      // Seller's Name
+                      Expanded(
+                        child: Text(
+                          product.seller?.fullName ?? "Unknown Seller",
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Product Image
                 product.productImage != null
                     ? ClipRRect(
                   borderRadius: const BorderRadius.vertical(
@@ -73,13 +80,14 @@ class ProductCard extends StatelessWidget {
                   ),
                   child: Image.network(
                     product.productImage!,
-                    height: 200,
-                    width: double.infinity,
+                    height: screenWidth, // Match height to screen width
+                    width: screenWidth,
                     fit: BoxFit.cover,
                   ),
                 )
                     : Container(
-                  height: 200,
+                  height: screenWidth, // Match height to screen width
+                  width: screenWidth,
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: const BorderRadius.vertical(
@@ -88,48 +96,55 @@ class ProductCard extends StatelessWidget {
                   ),
                   child: const Center(child: Text("No Image Available")),
                 ),
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(12.0),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.black.withOpacity(0.6),
-                          Colors.black.withOpacity(0.0),
-                        ],
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                      ),
+                // Product Title
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 5.0),
+                  child: Text(
+                    product.productTitle ?? "Untitled Product",
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF201089), // Updated color
                     ),
-                    child: Text(
-                      product.productTitle ?? "Untitled Product",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+                // Description
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+                  child: Text(
+                    product.productDescription ?? "No description available.",
+                    style: const TextStyle(fontSize: 14),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
             ),
-            // Description
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
-              child: Text(
-                product.productDescription ?? "No description available.",
-                style: const TextStyle(fontSize: 14),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
+          ),
+          // "Sold" Banner
+          if (product.isSold ?? false)
+            Positioned(
+              top: 16,
+              left: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.redAccent,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'SWAPPED',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
