@@ -83,7 +83,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (context) => MainNavigation()),
-            (Route<dynamic> route) => false, // Remove all previous routes
+            (Route<dynamic> route) => false,
       );
     } catch (e) {
       print('Error adding product: $e');
@@ -96,119 +96,156 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FBFF),
-      appBar: AppBar(
-        title: const Text('Add A Product To Swap'),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
-        titleTextStyle: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF090046),
-        ),
-        iconTheme: const IconThemeData(color: Color(0xFF090046)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: GestureDetector(
-                onTap: _pickImage,
-                child: Container(
-                  height: 150,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.grey),
-                    color: Colors.grey[300],
-                  ),
-                  child: _selectedImage != null
-                      ? ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.file(
-                      _selectedImage!,
-                      fit: BoxFit.cover,
+      body: CustomScrollView(
+        slivers: [
+          // Custom App Bar
+          SliverAppBar(
+            floating: true,
+            snap: true,
+            pinned: false,
+            backgroundColor: Colors.white,
+            elevation: 0,
+            flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 16.0, bottom: 12.0),
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 29.0),
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        height: 35,
+                      ),
                     ),
-                  )
-                      : const Center(child: Icon(Icons.add, size: 50, color: Colors.black54)),
-                ),
+                  ),
+                  const Text(
+                    'Add Product',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            if (_isUploading)
-              const Center(child: CircularProgressIndicator()),
-            const SizedBox(height: 8),
-            const Text(
-              'Product Title *',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF090046)),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                hintText: 'Enter product title',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image Picker
+                  Center(
+                    child: GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        height: 150,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey),
+                          color: Colors.grey[300],
+                        ),
+                        child: _selectedImage != null
+                            ? ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(
+                            _selectedImage!,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                            : const Center(child: Icon(Icons.add, size: 50, color: Colors.black54)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (_isUploading)
+                    const Center(child: CircularProgressIndicator()),
+                  const SizedBox(height: 8),
+                  // Product Title
+                  const Text(
+                    'Product Title *',
+                    style: TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF090046)),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _titleController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter product title',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Product Description
+                  const Text(
+                    'Product Description *',
+                    style: TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF090046)),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _descriptionController,
+                    maxLines: 4,
+                    decoration: InputDecoration(
+                      hintText: 'Enter product description',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Swap Preference
+                  const Text(
+                    'Swap Preference *',
+                    style: TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF090046)),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _swapPreferenceController,
+                    decoration: InputDecoration(
+                      hintText: 'e.g. 2020 TV or equivalent',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Estimated Retail Price
+                  const Text(
+                    'Estimated Retail Price *',
+                    style: TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF090046)),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _priceController,
+                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      hintText: 'Enter price in RON',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  // Submit Button
+                  ElevatedButton(
+                    onPressed: _submitProduct,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF201089),
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    child: const Text(
+                      'Add Product',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            const Text(
-              'Product Description *',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF090046)),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _descriptionController,
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: 'Enter product description',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Swap Preference *',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF090046)),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _swapPreferenceController,
-              decoration: InputDecoration(
-                hintText: 'e.g. 2020 TV or equivalent',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Estimated Retail Price *',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF090046)),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: _priceController,
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
-              decoration: InputDecoration(
-                hintText: 'Enter price in USD',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: _submitProduct,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF090046),
-                minimumSize: const Size.fromHeight(50),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: const Text(
-                'Add Product',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

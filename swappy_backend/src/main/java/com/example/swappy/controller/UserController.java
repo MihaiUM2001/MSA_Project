@@ -1,5 +1,6 @@
 package com.example.swappy.controller;
 
+import com.example.swappy.dto.UserUpdateRequest;
 import com.example.swappy.exception.ErrorResponse;
 import com.example.swappy.exception.user.NoSuchUserExistsException;
 import com.example.swappy.exception.user.UserAlreadyExistsException;
@@ -30,6 +31,11 @@ public class UserController {
     @GetMapping("/me")
     public User getMe(@RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         return userService.getMe(token);
+    }
+
+    @PatchMapping("/me")
+    public User updateMe(@RequestBody UserUpdateRequest userUpdateRequest, @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+        return userService.updateMe(token, userUpdateRequest);
     }
 
     @GetMapping("/{id}")

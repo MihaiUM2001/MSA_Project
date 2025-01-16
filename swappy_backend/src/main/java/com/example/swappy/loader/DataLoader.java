@@ -34,6 +34,7 @@ public class DataLoader {
                 .swapPreference(product.getSwapPreference())
                 .estimatedRetailPrice(product.getEstimatedRetailPrice())
                 .isVisible(product.getIsVisible())
+                .isSold(product.getIsSold())
                 .sellerName(product.getSeller() != null ? product.getSeller().getFullName() : null)
                 .sellerProfilePic(product.getSeller() != null ? product.getSeller().getProfilePictureURL() : null)
                 .build()

@@ -14,6 +14,7 @@ class Product {
   final List<dynamic>? swaps;
   final String? sellerName;
   final String? sellerProfilePic;
+  final bool? isSold;
 
   Product({
     this.id,
@@ -26,6 +27,7 @@ class Product {
     this.publishDate,
     this.numberOfViews,
     this.isVisible,
+    this.isSold,
     this.swaps,
     this.sellerName,
     this.sellerProfilePic,
@@ -44,6 +46,7 @@ class Product {
       numberOfViews: json['numberOfViews'],
       isVisible: json['isVisible'],
       swaps: json['swaps'] ?? [],
+      isSold: json['isSold'],
       sellerName: json['sellerName'] ?? null,
       sellerProfilePic: json['sellerProfilePic'] ?? null,// Ensure swaps is parsed as a list, defaulting to an empty list
     );

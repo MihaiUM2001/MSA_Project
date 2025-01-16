@@ -13,34 +13,84 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Login")),
+      appBar: AppBar(
+        title: const Text("Login"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: const Color(0xFF201089),
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // Email Field
-                TextFormField(
-                  controller: emailController,
-                  decoration: InputDecoration(labelText: "Email"),
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (value) => value!.isEmpty ? "Enter a valid email" : null,
-                ),
-                SizedBox(height: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 40),
 
-                // Password Field
-                TextFormField(
-                  controller: passwordController,
-                  decoration: InputDecoration(labelText: "Password"),
-                  obscureText: true,
-                  validator: (value) => value!.length < 6 ? "Password must be at least 6 characters" : null,
+              // Title Section
+              const Text(
+                "Welcome Back!",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF201089),
                 ),
-                SizedBox(height: 20),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                "Log in to your account",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 40),
 
-                // Login Button
-                ElevatedButton(
+              // Email Field
+              TextFormField(
+                controller: emailController,
+                decoration: InputDecoration(
+                  labelText: "Email",
+                  prefixIcon: const Icon(Icons.email, color: Color(0xFF201089)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: (value) =>
+                value!.isEmpty ? "Enter a valid email" : null,
+              ),
+              const SizedBox(height: 16),
+
+              // Password Field
+              TextFormField(
+                controller: passwordController,
+                decoration: InputDecoration(
+                  labelText: "Password",
+                  prefixIcon: const Icon(Icons.lock, color: Color(0xFF201089)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                obscureText: true,
+                validator: (value) => value!.length < 6
+                    ? "Password must be at least 6 characters"
+                    : null,
+              ),
+              const SizedBox(height: 40),
+
+              // Login Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF201089),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                   onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       try {
@@ -49,12 +99,15 @@ class LoginScreen extends StatelessWidget {
                           passwordController.text,
                         );
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Login successful")),
+                          const SnackBar(
+                            content: Text("Login successful"),
+                          ),
                         );
                         Navigator.pushAndRemoveUntil(
                           context,
-                          MaterialPageRoute(builder: (context) => MainNavigation()),
-                              (Route<dynamic> route) => false, // Remove all previous routes
+                          MaterialPageRoute(
+                              builder: (context) => MainNavigation()),
+                              (Route<dynamic> route) => false,
                         ); // Navigate to home screen
                       } catch (error) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -63,10 +116,35 @@ class LoginScreen extends StatelessWidget {
                       }
                     }
                   },
-                  child: Text("Login"),
+                  child: const Text(
+                    "Log In",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 16),
+
+              // Register Link
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/register');
+                  },
+                  child: const Text(
+                    "Don't have an account? Register",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF201089),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
