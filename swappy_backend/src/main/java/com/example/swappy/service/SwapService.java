@@ -14,10 +14,13 @@ import com.example.swappy.model.SwapStatus;
 import com.example.swappy.model.User;
 import com.example.swappy.jpa.repository.SwapRepository;
 import com.example.swappy.jpa.repository.UserRepository;
+import com.google.cloud.firestore.FieldValue;
+import com.google.cloud.firestore.Firestore;
+import com.google.firebase.cloud.FirestoreClient;
 import org.springframework.stereotype.Service;
 import com.example.swappy.security.JwtUtil;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 public class SwapService {
@@ -108,6 +111,30 @@ public class SwapService {
             throw new CannotSwapOwnProductException("You cannot swap your own items!");
         }
     }
+    private void createChatInFirestore(Swap swap) {
+        Firestore db = FirestoreClient.getFirestore();
+
+        // Generate chat room ID using buyer and seller IDs
+        String chatRoomId = generateChatRoomId(swap.getBuyer().getId(), swap.getSeller().getId());
+
+        // Chat Data
+        Map<String, Object> chatData = new HashMap<>();
+        chatData.put("participants", Arrays.asList(swap.getBuyer().getId(), swap.getSeller().getId()));
+        chatData.put("swapId", swap.getId());
+        chatData.put("lastMessage", "");
+        chatData.put("lastMessageTime", FieldValue.serverTimestamp());
+
+        // Save chat in Firestore
+        db.collection("chats").document(chatRoomId).set(chatData);
+    }
+
+    // Generate a unique chat room ID using buyer and seller IDs
+    private String generateChatRoomId(Long userId1, Long userId2) {
+        List<Long> sortedIds = Arrays.asList(userId1, userId2);
+        Collections.sort(sortedIds); // Ensure consistent ID order
+        return sortedIds.get(0) + "_" + sortedIds.get(1);
+    }
+
 
     public Swap updateSwap(SwapUpdateRequest swapRequest, Long id, String token) {
 
@@ -130,6 +157,7 @@ public class SwapService {
 
             if (swapRequest.getSwapStatus() == SwapStatus.ACCEPTED && user == existingSwap.getSeller()) {
                 existingSwap.setSwapStatus(swapRequest.getSwapStatus());
+                createChatInFirestore(existingSwap);
                 Product product = productJpaRepository.findOneById(existingSwap.getProduct().getId());
                 product.setIsSold(true);
                 productJpaRepository.save(product);
