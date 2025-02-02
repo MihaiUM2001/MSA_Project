@@ -149,6 +149,29 @@ class UserService {
     }
   }
 
+  Future<Map<String, dynamic>> getUserDetails(String userId) async {
+    final token = await secureStorage.read(key: 'token');
+
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/users/$userId'), // API to get user by ID
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to fetch user details');
+    }
+  }
+
+
   Future<Map<String, dynamic>> getUserProfile() async {
     final token = await secureStorage.read(key: 'token');
 

@@ -41,6 +41,7 @@ dependencies:
   mime: ^2.0.0
   http_parser: ^4.0.2
   flutter_vector_icons: ^2.0.0
+  intl: ^0.20.2
 
 
   # The following adds the Cupertino Icons font to your application.

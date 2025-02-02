@@ -3,6 +3,47 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ChatService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+
+  // Store temporary messages before Firestore saves them
+  final Map<String, List<Map<String, dynamic>>> _tempMessages = {};
+
+  /// **Add temporary message to UI**
+  void addLocalMessage(String chatRoomId, Map<String, dynamic> message) {
+    _tempMessages.putIfAbsent(chatRoomId, () => []).add(message);
+  }
+
+  /// **Update temporary message status once Firestore confirms**
+  void updateLocalMessageStatus(String chatRoomId, String tempId) {
+    _tempMessages[chatRoomId]?.removeWhere((msg) => msg["messageId"] == tempId);
+  }
+
+  /// **Remove failed message from UI**
+  void removeLocalMessage(String chatRoomId, String tempId) {
+    _tempMessages[chatRoomId]?.removeWhere((msg) => msg["messageId"] == tempId);
+  }
+
+  /// **Get messages stream with local messages included**
+  Stream<List<Map<String, dynamic>>> getMessages(String chatRoomId) {
+    return _firestore
+        .collection("chats")
+        .doc(chatRoomId)
+        .collection("messages")
+        .orderBy("timestamp", descending: true)
+        .snapshots()
+        .map((snapshot) {
+      List<Map<String, dynamic>> firestoreMessages = snapshot.docs
+          .map((doc) => {"messageId": doc.id, ...doc.data()})
+          .toList();
+
+      // Merge Firestore messages with temporary unsent ones
+      if (_tempMessages.containsKey(chatRoomId)) {
+        firestoreMessages.insertAll(0, _tempMessages[chatRoomId]!);
+      }
+
+      return firestoreMessages;
+    });
+  }
+
   /// Creates a chat room when a swap is confirmed
   Future<void> createChatRoom(String chatRoomId, String buyerId, String sellerId) async {
     DocumentReference chatRef = _firestore.collection('chats').doc(chatRoomId);
@@ -34,12 +75,6 @@ class ChatService {
     });
   }
 
-  /// Fetches chat messages
-  Stream<QuerySnapshot> getMessages(String chatRoomId) {
-    return _firestore.collection('chats').doc(chatRoomId).collection('messages')
-        .orderBy('timestamp', descending: true)
-        .snapshots();
-  }
 
   /// Fetches all chat rooms for a user
   Stream<QuerySnapshot> getUserChats(String userId) {
