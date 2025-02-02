@@ -207,7 +207,7 @@ class _MyOffersScreenState extends State<MyOffersScreen> {
                       ),
 
                       // Cancel Button
-                      if (swap.swapStatus.toLowerCase() != 'cancelled')
+                      if (swap.swapStatus.toLowerCase() != 'cancelled' && swap.swapStatus.toLowerCase() != 'accepted' && swap.swapStatus.toLowerCase() != 'denied' )
                         Align(
                           alignment: Alignment.centerRight,
                           child: IconButton(
