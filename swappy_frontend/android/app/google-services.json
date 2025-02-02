@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "27960365860",
+    "project_id": "swappy-b548b",
+    "storage_bucket": "swappy-b548b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:27960365860:android:4a12b685472c6740a399b1",
+        "android_client_info": {
+          "package_name": "com.example.swappy_frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCWaoYCgr7hUzUBVpn9pt7W-valKXb15Zc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
