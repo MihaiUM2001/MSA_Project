@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../components/duolingo_button.dart';
 import '../services/user_service.dart';
 import 'my_products_screen.dart';
 import 'my_offers_screen.dart';
@@ -39,8 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryColor = const Color(0xFF201089); // Primary color
-    final Color accentColor = const Color(0xFF201089); // Accent color
+    final Color primaryColor = const Color(0xFF201089); // Primary color// Accent color
     final Color backgroundColor = const Color(0xFFF7FBFF);
 
     return Scaffold(
@@ -100,49 +100,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const SizedBox(height: 32),
-                  ElevatedButton.icon(
+                  DuolingoButton(
+                    text: 'My Products',
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => MyProductsScreen()),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: accentColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    icon: const Icon(Icons.shopping_bag, color: Colors.white),
-                    label: const Text(
-                      'My Products',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
+                    // Duolingo green start
+                    isSolidColor: true, // Solid color like the screenshot
+                    startColor:  const Color(0xFF201089),// Gradient style // Solid color like the screenshot // Duolingo green end
                   ),
                   const SizedBox(height: 16),
-                  ElevatedButton.icon(
+                  DuolingoButton(
+                    text: 'My Swaps',
                     onPressed: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => MyOffersScreen()),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: primaryColor,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    icon: const Icon(Icons.swap_horiz, color: Colors.white),
-                    label: const Text(
-                      'My Offers',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
+                    // Duolingo green start
+                    isSolidColor: true, // Solid color like the screenshot
+                    startColor:  const Color(0xFF201089),// Gradient style // Solid color like the screenshot // Duolingo green end
                   ),
                   const SizedBox(height: 16),
-                  ElevatedButton.icon(
+                  DuolingoButton(
+                    text: 'Edit Profile',
                     onPressed: () {
                       Navigator.push(
                         context,
@@ -154,39 +139,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      backgroundColor: Colors.green,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    icon: const Icon(Icons.edit, color: Colors.white),
-                    label: const Text(
-                      'Edit Profile',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
+                    // Duolingo green start
+                    isSolidColor: true, // Solid color like the screenshot
+                    startColor:  Colors.green,// Gradient style // Solid color like the screenshot // Duolingo green end
                   ),
                   const SizedBox(height: 32),
-                  OutlinedButton.icon(
+                  DuolingoButton(
+                    text: 'Log Out',
                     onPressed: () => _logout(context),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size.fromHeight(50),
-                      side: BorderSide(color: Colors.red[400]!),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    icon: const Icon(Icons.logout, color: Colors.red),
-                    label: const Text(
-                      'Log Out',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.red,
-                      ),
-                    ),
+                    // Duolingo green start
+                    isSolidColor: true, // Solid color like the screenshot
+                    startColor:  Colors.red[400],// Gradient style // Solid color like the screenshot // Duolingo green end
                   ),
+
                 ],
               ),
             ),
